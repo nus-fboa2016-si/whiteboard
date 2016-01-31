@@ -65,13 +65,12 @@
         }
 
         // Use event.pageX / event.pageY here
-<<<<<<< HEAD
         var vector = new THREE.Vector3();
 
         vector.set(
-            ( event.clientX / window.innerWidth ) * 2 - 1,
-            - ( event.clientY / window.innerHeight ) * 2 + 1,
-            0.5 );
+          ( event.clientX / window.innerWidth ) * 2 - 1,
+          - ( event.clientY / window.innerHeight ) * 2 + 1,
+          0.5 );
 
         vector.unproject( camera );
 
@@ -83,16 +82,10 @@
 
         console.log(pos);
 
-                mousePos = {
+        mousePos = {
           x: pos.x,
           y: pos.y
-=======
-        mousePos = {
-          x: event.pageX,
-          y: event.pageY
->>>>>>> 5cd27bc77a4ab64a23c31a804b52a307a5cfafc6
         }
-    }
 
 
     init();
