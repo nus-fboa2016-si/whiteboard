@@ -37,17 +37,51 @@
       controls, container, 
       options, spawnerOptions, particleSystem;
 
+    var mousePos = {
+      x: 0,
+      y: 0
+    }
+
+    document.onmousemove = handleMouseMove;
+    function handleMouseMove(event) {
+        var dot, eventDoc, doc, body, pageX, pageY;
+
+        event = event || window.event; // IE-ism
+
+        // If pageX/Y aren't available and clientX/Y are,
+        // calculate pageX/Y - logic taken from jQuery.
+        // (This is to support old IE)
+        if (event.pageX == null && event.clientX != null) {
+            eventDoc = (event.target && event.target.ownerDocument) || document;
+            doc = eventDoc.documentElement;
+            body = eventDoc.body;
+
+            event.pageX = event.clientX +
+              (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+              (doc && doc.clientLeft || body && body.clientLeft || 0);
+            event.pageY = event.clientY +
+              (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
+              (doc && doc.clientTop  || body && body.clientTop  || 0 );
+        }
+
+        // Use event.pageX / event.pageY here
+        mousePos = {
+          x: event.pageX,
+          y: event.pageY
+        }
+    }
+
+
     init();
     animate();
 
     function init() {
 
-
       container = document.createElement('div');
       document.body.appendChild(container);
 
       camera = new THREE.PerspectiveCamera(28, window.innerWidth / window.innerHeight, 1, 10000);
-      camera.position.z = 100;
+      camera.position.z = 1000;
 
       scene = new THREE.Scene();
 
@@ -71,7 +105,8 @@
         colorRandomness: .2,
         turbulence: .5,
         lifetime: 2,
-        size: 5,
+        // size: 5,
+        size: 10,
         sizeRandomness: 1
       };
 
@@ -110,8 +145,14 @@
       if (tick < 0) tick = 0;
 
       if (delta > 0) {
-        options.position.x = Math.sin(tick * spawnerOptions.horizontalSpeed) * 20;
-        options.position.y = Math.sin(tick * spawnerOptions.verticalSpeed) * 10;
+        // options.position.x = Math.sin(tick * spawnerOptions.horizontalSpeed) * 20;
+        // options.position.y = Math.sin(tick * spawnerOptions.verticalSpeed) * 10;
+        // console.log(Math.sin(tick * spawnerOptions.horizontalSpeed) * 20);
+        // console.log(Math.sin(tick * spawnerOptions.verticalSpeed) * 10);
+        // console.log(mousePos);
+        options.position.x = mousePos.x - window.innerWidth / 2;
+        options.position.y = window.innerHeight - mousePos.y - window.innerHeight / 2;
+        
         options.position.z = Math.sin(tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed) * 5;
 
         for (var x = 0; x < spawnerOptions.spawnRate * delta; x++) {
