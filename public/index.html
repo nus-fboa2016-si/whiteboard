@@ -65,9 +65,26 @@
         }
 
         // Use event.pageX / event.pageY here
-        mousePos = {
-          x: event.pageX,
-          y: event.pageY
+        var vector = new THREE.Vector3();
+
+        vector.set(
+            ( event.clientX / window.innerWidth ) * 2 - 1,
+            - ( event.clientY / window.innerHeight ) * 2 + 1,
+            0.5 );
+
+        vector.unproject( camera );
+
+        var dir = vector.sub( camera.position ).normalize();
+
+        var distance = - camera.position.z / dir.z;
+
+        var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
+
+        console.log(pos);
+
+                mousePos = {
+          x: pos.x,
+          y: pos.y
         }
     }
 
@@ -150,8 +167,8 @@
         // console.log(Math.sin(tick * spawnerOptions.horizontalSpeed) * 20);
         // console.log(Math.sin(tick * spawnerOptions.verticalSpeed) * 10);
         // console.log(mousePos);
-        options.position.x = mousePos.x - window.innerWidth / 2;
-        options.position.y = window.innerHeight - mousePos.y - window.innerHeight / 2;
+        options.position.x = mousePos.x;
+        options.position.y = mousePos.y;
         
         options.position.z = Math.sin(tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed) * 5;
 
