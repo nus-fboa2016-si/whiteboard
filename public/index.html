@@ -39,7 +39,9 @@
 
     var mousePos = {
       x: 0,
-      y: 0
+      y: 0,
+      ex_x: 0,
+      ex_y: 0
     }
 
     document.onmousemove = handleMouseMove;
@@ -80,12 +82,12 @@
 
         var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
 
-        console.log(pos);
-
-        mousePos = {
-          x: pos.x,
-          y: pos.y
-        }
+        // console.log(pos);
+        mousePos.ex_x = mousePos.x;
+        mousePos.ex_y = mousePos.y;
+        mousePos.x = pos.x;
+        mousePos.y = pos.y;
+        // console.log("change pos" + pos.x + " " + pos.y);
       }
 
     init();
@@ -97,7 +99,7 @@
       document.body.appendChild(container);
 
       camera = new THREE.PerspectiveCamera(28, window.innerWidth / window.innerHeight, 1, 10000);
-      camera.position.z = 1000;
+      camera.position.z = 100;
 
       scene = new THREE.Scene();
 
@@ -119,15 +121,16 @@
         velocityRandomness: .5,
         color: 0xaa88ff,
         colorRandomness: .2,
-        turbulence: .5,
-        lifetime: 2,
+        turbulence: .2,
+        lifetime: 0.6,
         // size: 5,
         size: 10,
         sizeRandomness: 1
       };
 
       spawnerOptions = {
-        spawnRate: 15000,
+        spawnRate: 8000,
+        // spawnRate: 15000,
         horizontalSpeed: 1.5,
         verticalSpeed: 1.33,
         timeScale: 1
@@ -163,15 +166,19 @@
       if (delta > 0) {
         // options.position.x = Math.sin(tick * spawnerOptions.horizontalSpeed) * 20;
         // options.position.y = Math.sin(tick * spawnerOptions.verticalSpeed) * 10;
+        // options.position.z = Math.sin(tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed) * 5;
         // console.log(Math.sin(tick * spawnerOptions.horizontalSpeed) * 20);
         // console.log(Math.sin(tick * spawnerOptions.verticalSpeed) * 10);
         // console.log(mousePos);
         options.position.x = mousePos.x;
         options.position.y = mousePos.y;
-        
-        options.position.z = Math.sin(tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed) * 5;
-
-        for (var x = 0; x < spawnerOptions.spawnRate * delta; x++) {
+        options.position.z = 1;
+        // console.log("animate");
+        maxSpawn = spawnerOptions.spawnRate * delta;
+        for (var x = 0; x < maxSpawn; x++) {
+          percent = x / maxSpawn;
+          options.position.x = mousePos.ex_x * (1 - percent) + mousePos.x * percent;
+          options.position.y = mousePos.ex_y * (1 - percent) + mousePos.y * percent;
           // Yep, that's really it.  Spawning particles is super cheap, and once you spawn them, the rest of
           // their lifecycle is handled entirely on the GPU, driven by a time uniform updated below
           particleSystem.spawnParticle(options);
