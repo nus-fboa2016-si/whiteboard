@@ -80,7 +80,8 @@
           currentColor = color.toHexString(); // #ff0000
           $("#circle").attr("fill", currentColor);
           currentColorHex = parseInt(currentColor.replace(/^#/, ''), 16);
-          options.color = currentColorHex;
+          defaultOptions.color = currentColorHex;
+          drawingOptions.color = currentColorHex;
       }
     });
     var camera, tick = 0,
@@ -101,10 +102,12 @@
 
     function handleMouseUp(event) {
       options = defaultOptions;
+      spawnerOptions.spawnRate = 3000;
     }
 
     function handleMouseDown(event) {
       options = drawingOptions;
+      spawnerOptions.spawnRate = 1000;
     }
 
     function handleMouseMove(event) {
@@ -194,7 +197,7 @@
         };
 
         spawnerOptions = {
-            spawnRate: 5000,
+            spawnRate: 3000,
             // spawnRate: 15000,
             horizontalSpeed: 0,
             verticalSpeed: 0,
