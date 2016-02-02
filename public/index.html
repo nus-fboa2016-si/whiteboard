@@ -45,6 +45,34 @@
     var defaultColor = currentColor = "#aa88ff";
     var currentColorHex = 0xaa88ff;
 
+    var defaultOptions = {
+      position: new THREE.Vector3(),
+      positionRandomness: .3,
+      velocity: new THREE.Vector3(),
+      velocityRandomness: .5,
+      color: currentColorHex,
+      colorRandomness: .2,
+      turbulence: 0.1,
+      lifetime: 1,
+      // size: 5,
+      size: 10,
+      sizeRandomness: 1
+    };
+
+    var drawingOptions = {
+      position: new THREE.Vector3(),
+      positionRandomness: 0,
+      velocity: new THREE.Vector3(),
+      velocityRandomness: 0,
+      color: currentColorHex,
+      colorRandomness: 0,
+      turbulence: 0,
+      lifetime: 10,
+      // size: 5,
+      size: 10,
+      sizeRandomness: 1
+    }
+
     $("#circle").spectrum({
       color: defaultColor,
       showButtons: false,
@@ -52,6 +80,7 @@
           currentColor = color.toHexString(); // #ff0000
           $("#circle").attr("fill", currentColor);
           currentColorHex = parseInt(currentColor.replace(/^#/, ''), 16);
+          options.color = currentColorHex;
       }
     });
     var camera, tick = 0,
@@ -67,6 +96,16 @@
     }
 
     document.onmousemove = handleMouseMove;
+    document.onmousedown = handleMouseDown;
+    document.onmouseup = handleMouseUp;
+
+    function handleMouseUp(event) {
+      options = defaultOptions;
+    }
+
+    function handleMouseDown(event) {
+      options = drawingOptions;
+    }
 
     function handleMouseMove(event) {
         var dot, eventDoc, doc, body, pageX, pageY;
@@ -109,6 +148,10 @@
         mousePos.ex_y = mousePos.y;
         mousePos.x = pos.x;
         mousePos.y = pos.y;
+
+        // options.position.x = mousePos.x;
+        // options.position.y = mousePos.y;
+        // options.position.z = 1;
         // console.log("change pos" + pos.x + " " + pos.y);
     }
 
@@ -121,7 +164,7 @@
         document.body.appendChild(container);
 
         camera = new THREE.PerspectiveCamera(28, window.innerWidth / window.innerHeight, 1, 10000);
-        camera.position.z = 50;
+        camera.position.z = 100;
 
         scene = new THREE.Scene();
 
@@ -143,18 +186,18 @@
             velocityRandomness: .5,
             color: currentColorHex,
             colorRandomness: .2,
-            turbulence: .2,
-            lifetime: 0.4,
+            turbulence: 0.1,
+            lifetime: 1,
             // size: 5,
-            size: 8,
+            size: 10,
             sizeRandomness: 1
         };
 
         spawnerOptions = {
-            spawnRate: 10000,
+            spawnRate: 5000,
             // spawnRate: 15000,
-            horizontalSpeed: 1.5,
-            verticalSpeed: 1.33,
+            horizontalSpeed: 0,
+            verticalSpeed: 0,
             timeScale: 1
         }
 
@@ -192,10 +235,6 @@
             // console.log(Math.sin(tick * spawnerOptions.horizontalSpeed) * 20);
             // console.log(Math.sin(tick * spawnerOptions.verticalSpeed) * 10);
             // console.log(mousePos);
-            options.position.x = mousePos.x;
-            options.position.y = mousePos.y;
-            options.position.z = 1;
-            options.color = currentColorHex;
             // console.log("animate");
             maxSpawn = spawnerOptions.spawnRate * delta;
             for (var x = 0; x < maxSpawn; x++) {
