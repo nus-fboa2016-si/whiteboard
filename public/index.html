@@ -35,9 +35,25 @@
         <circle id="circle" cx="50" cy="50" r="15" fill="#aa88ff" />
       </svg>
     </div>
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
     <script src="./js/three.min.js"></script>
     <script src="./js/GPUParticleSystem.js" charset="utf-8"></script>
     <script>
+
+    var defaultColor = currentColor = "#aa88ff";
+    var currentColorHex = 0xaa88ff;
+
+    $("#circle").spectrum({
+      color: defaultColor,
+      showButtons: false,
+      change: function(color) {
+          currentColor = color.toHexString(); // #ff0000
+          $("#circle").attr("fill", currentColor);
+          currentColorHex = parseInt(currentColor.replace(/^#/, ''), 16);
+      }
+    });
     var camera, tick = 0,
         scene, renderer, clock = new THREE.Clock(true),
         controls, container,
@@ -105,7 +121,7 @@
         document.body.appendChild(container);
 
         camera = new THREE.PerspectiveCamera(28, window.innerWidth / window.innerHeight, 1, 10000);
-        camera.position.z = 100;
+        camera.position.z = 50;
 
         scene = new THREE.Scene();
 
@@ -125,7 +141,7 @@
             positionRandomness: .3,
             velocity: new THREE.Vector3(),
             velocityRandomness: .5,
-            color: 0xaa88ff,
+            color: currentColorHex,
             colorRandomness: .2,
             turbulence: .2,
             lifetime: 0.4,
@@ -179,6 +195,7 @@
             options.position.x = mousePos.x;
             options.position.y = mousePos.y;
             options.position.z = 1;
+            options.color = currentColorHex;
             // console.log("animate");
             maxSpawn = spawnerOptions.spawnRate * delta;
             for (var x = 0; x < maxSpawn; x++) {
