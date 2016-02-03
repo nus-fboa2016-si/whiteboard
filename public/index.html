@@ -2,50 +2,238 @@
 <html lang="en">
 
 <head>
-    <title>three.js - gpu particle system</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <style>
-    body {
-        background-color: #000000;
-        margin: 0px;
-        overflow: hidden;
-    }
-    
-    a {
-        color: #0078ff;
-    }
-    
-    .dg {
-        right: auto!important;
-        left: 20px!important;
-    }
-
-    #circle:hover {
-      cursor: pointer;
-    }
-    </style>
+  <title>three.js - gpu particle system</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+  body {
+    background-color: #000000;
+    margin: 0px;
+    overflow: hidden;
+  }
+  
+  a {
+    color: #0078ff;
+  }
+  
+  .dg {
+    right: auto!important;
+    left: 20px!important;
+  }
+  
+  #circle:hover {
+    cursor: pointer;
+  }
+  </style>
 </head>
 
 <body>
-    <!--   <div style="position: absolute; top: 10px; width: 100%; text-align: center; color:#eee">
+  <!--   <div style="position: absolute; top: 10px; width: 100%; text-align: center; color:#eee">
     <a href="http://threejs.org" target="_blank">three.js</a> - GPU particle system plugin by <a href="http://charliehoey.com">Charlie Hoey</a>.</div> -->
-    <div style="position:absolute; width:100%;">
-      <svg height="100" width="100" style="display: block;margin: 0 auto;">
-        <circle id="circle" cx="50" cy="50" r="15" fill="#aa88ff" />
-      </svg>
-    </div>
-    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
-    <script src="./js/three.min.js"></script>
-    <script src="./js/GPUParticleSystem.js" charset="utf-8"></script>
-    <script>
+  <div style="position:absolute; width:100%;">
+    <svg height="100" width="100" style="display: block;margin: 0 auto;">
+      <circle id="circle" cx="50" cy="50" r="15" fill="#aa88ff" />
+    </svg>
+  </div>
+  <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
+  <script src="./js/three.min.js"></script>
+  <script src="./js/GPUParticleSystem.js" charset="utf-8"></script>
+  <script>
+  var camera, tick = 0,
+    scene, renderer, clock = new THREE.Clock(true),
+    controls, container,
+    options, spawnerOptions, particleSystem;
 
-    var defaultColor = currentColor = "#aa88ff";
-    var currentColorHex = 0xaa88ff;
+  var defaultColor = currentColor = "#aa88ff";
+  var currentColorHex = 0xaa88ff;
 
-    var defaultOptions = {
+  var localDrawingAgent = "local";
+  var agents = {};
+
+  function DrawingAgent(name, color) {
+    this.name = name;
+    this.color = color;
+    this.mousePos = null;
+    this.isDrawing = false;
+    this.isConfiguring = false;
+
+    this.updatePos = function(newX, newY) {
+      if (this.mousePos === null) {
+        this.mousePos = {
+          x: newX,
+          y: newY,
+          ex_x: newX,
+          ex_y: newY
+        }
+      } else {
+        this.mousePos.ex_x = this.mousePos.x;
+        this.mousePos.ex_y = this.mousePos.y;
+        this.mousePos.x = newX;
+        this.mousePos.y = newY;
+      }
+    };
+
+    this.startDrawing = function() {
+      this.isDrawing = true;
+    };
+
+    this.stopDrawing = function() {
+      this.isDrawing = false;
+    }
+
+    this.startConfiguring = function() {
+      this.isConfiguring = true;
+    };
+
+    this.stopConfiguring = function() {
+      this.isConfiguring = false;
+    }
+
+  }
+
+  agents[localDrawingAgent] = new DrawingAgent(localDrawingAgent, currentColorHex);
+
+  // var defaultOptions = {
+  //   position: new THREE.Vector3(),
+  //   positionRandomness: .3,
+  //   velocity: new THREE.Vector3(),
+  //   velocityRandomness: .5,
+  //   color: currentColorHex,
+  //   colorRandomness: .2,
+  //   turbulence: 0.1,
+  //   lifetime: 1,
+  //   // size: 5,
+  //   size: 10,
+  //   sizeRandomness: 1
+  // };
+
+  // var drawingOptions = {
+  //   position: new THREE.Vector3(),
+  //   positionRandomness: 0,
+  //   velocity: new THREE.Vector3(),
+  //   velocityRandomness: 0,
+  //   color: currentColorHex,
+  //   colorRandomness: 0,
+  //   turbulence: 0,
+  //   lifetime: 10,
+  //   // size: 5,
+  //   size: 10,
+  //   sizeRandomness: 1
+  // }
+
+  $("#circle").spectrum({
+    color: defaultColor,
+    showButtons: false,
+    change: function(color) {
+      currentColor = color.toHexString(); // #ff0000
+      $("#circle").attr("fill", currentColor);
+      currentColorHex = parseInt(currentColor.replace(/^#/, ''), 16);
+      options.color = currentColorHex;
+      agents[localDrawingAgent].color = currentColorHex;
+    },
+    hide: function(color) {
+        console.log("hide");
+        agents[localDrawingAgent].stopConfiguring();
+    },
+    show: function(color) {
+        console.log("show");
+        agents[localDrawingAgent].startConfiguring();
+    }
+  });
+
+  document.onmousemove = handleMouseMove;
+  document.onmousedown = handleMouseDown;
+  document.onmouseup = handleMouseUp;
+
+  function handleMouseUp(event) {
+    console.log("stopDrawing");
+    agents[localDrawingAgent].stopDrawing();
+    // options = defaultOptions;
+    // spawnerOptions.spawnRate = 3000;
+  }
+
+  function handleMouseDown(event) {
+    console.log("startDrawing");
+    agents[localDrawingAgent].startDrawing();
+    // options = drawingOptions;
+    // spawnerOptions.spawnRate = 1000;
+  }
+
+  function handleMouseMove(event) {
+    var dot, eventDoc, doc, body, pageX, pageY;
+
+    event = event || window.event; // IE-ism
+
+    // If pageX/Y aren't available and clientX/Y are,
+    // calculate pageX/Y - logic taken from jQuery.
+    // (This is to support old IE)
+    if (event.pageX == null && event.clientX != null) {
+      eventDoc = (event.target && event.target.ownerDocument) || document;
+      doc = eventDoc.documentElement;
+      body = eventDoc.body;
+
+      event.pageX = event.clientX +
+        (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+        (doc && doc.clientLeft || body && body.clientLeft || 0);
+      event.pageY = event.clientY +
+        (doc && doc.scrollTop || body && body.scrollTop || 0) -
+        (doc && doc.clientTop || body && body.clientTop || 0);
+    }
+
+    // Use event.pageX / event.pageY here
+    var vector = new THREE.Vector3();
+
+    vector.set(
+      (event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1,
+      0.5);
+
+    vector.unproject(camera);
+
+    var dir = vector.sub(camera.position).normalize();
+
+    var distance = -camera.position.z / dir.z;
+
+    var pos = camera.position.clone().add(dir.multiplyScalar(distance));
+
+    // console.log(pos);
+    // mousePos.ex_x = mousePos.x;
+    // mousePos.ex_y = mousePos.y;
+    // mousePos.x = pos.x;
+    // mousePos.y = pos.y;
+    agents[localDrawingAgent].updatePos(pos.x, pos.y);
+    // options.position.x = mousePos.x;
+    // options.position.y = mousePos.y;
+    // options.position.z = 1;
+    // console.log("change pos" + pos.x + " " + pos.y);
+  }
+
+  init();
+  animate();
+
+  function init() {
+
+    container = document.createElement('div');
+    document.body.appendChild(container);
+
+    camera = new THREE.PerspectiveCamera(28, window.innerWidth / window.innerHeight, 1, 10000);
+    camera.position.z = 100;
+
+    scene = new THREE.Scene();
+
+    // The GPU Particle system extends THREE.Object3D, and so you can use it
+    // as you would any other scene graph component.  Particle positions will be
+    // relative to the position of the particle system, but you will probably only need one
+    // system for your whole scene
+    particleSystem = new THREE.GPUParticleSystem({
+      maxParticles: 250000
+    });
+    scene.add(particleSystem);
+
+
+    // options passed during each spawned
+    options = {
       position: new THREE.Vector3(),
       positionRandomness: .3,
       velocity: new THREE.Vector3(),
@@ -59,209 +247,101 @@
       sizeRandomness: 1
     };
 
-    var drawingOptions = {
-      position: new THREE.Vector3(),
-      positionRandomness: 0,
-      velocity: new THREE.Vector3(),
-      velocityRandomness: 0,
-      color: currentColorHex,
-      colorRandomness: 0,
-      turbulence: 0,
-      lifetime: 10,
-      // size: 5,
-      size: 10,
-      sizeRandomness: 1
+    spawnerOptions = {
+      // spawnRate: 3000,
+      spawnRate: 5000,
+      horizontalSpeed: 0,
+      verticalSpeed: 0,
+      timeScale: 1
     }
 
-    $("#circle").spectrum({
-      color: defaultColor,
-      showButtons: false,
-      change: function(color) {
-          currentColor = color.toHexString(); // #ff0000
-          $("#circle").attr("fill", currentColor);
-          currentColorHex = parseInt(currentColor.replace(/^#/, ''), 16);
-          defaultOptions.color = currentColorHex;
-          drawingOptions.color = currentColorHex;
+    renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    window.addEventListener('resize', onWindowResize, false);
+
+  }
+
+  function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+  }
+
+  function animate() {
+
+    requestAnimationFrame(animate);
+
+    var delta = clock.getDelta() * spawnerOptions.timeScale;
+    tick += delta;
+
+    if (tick < 0) tick = 0;
+
+    if (delta > 0) {
+      // options.position.x = Math.sin(tick * spawnerOptions.horizontalSpeed) * 20;
+      // options.position.y = Math.sin(tick * spawnerOptions.verticalSpeed) * 10;
+      // options.position.z = Math.sin(tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed) * 5;
+      // console.log(Math.sin(tick * spawnerOptions.horizontalSpeed) * 20);
+      // console.log(Math.sin(tick * spawnerOptions.verticalSpeed) * 10);
+      // console.log(mousePos);
+      // console.log("animate");
+      maxSpawn = spawnerOptions.spawnRate * delta;
+
+      var mousePos = agents[localDrawingAgent].mousePos;
+      if (mousePos) {
+        for (var x = 0; x < maxSpawn; x++) {
+          percent = x / maxSpawn;
+          options.position.x = mousePos.ex_x * (1 - percent) + mousePos.x * percent;
+          options.position.y = mousePos.ex_y * (1 - percent) + mousePos.y * percent;
+          // Yep, that's really it.  Spawning particles is super cheap, and once you spawn them, the rest of
+          // their lifecycle is handled entirely on the GPU, driven by a time uniform updated below
+          particleSystem.spawnParticle(options);
+        }
       }
+    }
+    for (var key in agents) {
+      if (agents.hasOwnProperty(key)) {
+        var agent = agents[key];
+        if (agent.isDrawing && !agent.isConfiguring) {
+          drawLine(agent.color, agent.mousePos.ex_x, agent.mousePos.ex_y, agent.mousePos.x, agent.mousePos.y);
+        }
+      }
+    }
+
+    particleSystem.update(tick);
+
+    render();
+
+  }
+
+
+  function drawLine(color, x0, y0, x1, y1) {
+    var material = new THREE.LineBasicMaterial({
+      color: color,
+      linewidth: 10
     });
-    var camera, tick = 0,
-        scene, renderer, clock = new THREE.Clock(true),
-        controls, container,
-        options, spawnerOptions, particleSystem;
 
-    var mousePos = {
-        x: 0,
-        y: 0,
-        ex_x: 0,
-        ex_y: 0
-    }
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(
+      new THREE.Vector3(x0, y0, -1),
+      new THREE.Vector3(x1, y1, -1)
+    );
 
-    document.onmousemove = handleMouseMove;
-    document.onmousedown = handleMouseDown;
-    document.onmouseup = handleMouseUp;
+    var line = new THREE.Line(geometry, material);
+    scene.add(line);
+  }
 
-    function handleMouseUp(event) {
-      options = defaultOptions;
-      spawnerOptions.spawnRate = 3000;
-    }
+  function render() {
 
-    function handleMouseDown(event) {
-      options = drawingOptions;
-      spawnerOptions.spawnRate = 1000;
-    }
+    renderer.render(scene, camera);
 
-    function handleMouseMove(event) {
-        var dot, eventDoc, doc, body, pageX, pageY;
-
-        event = event || window.event; // IE-ism
-
-        // If pageX/Y aren't available and clientX/Y are,
-        // calculate pageX/Y - logic taken from jQuery.
-        // (This is to support old IE)
-        if (event.pageX == null && event.clientX != null) {
-            eventDoc = (event.target && event.target.ownerDocument) || document;
-            doc = eventDoc.documentElement;
-            body = eventDoc.body;
-
-            event.pageX = event.clientX +
-                (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
-                (doc && doc.clientLeft || body && body.clientLeft || 0);
-            event.pageY = event.clientY +
-                (doc && doc.scrollTop || body && body.scrollTop || 0) -
-                (doc && doc.clientTop || body && body.clientTop || 0);
-        }
-
-        // Use event.pageX / event.pageY here
-        var vector = new THREE.Vector3();
-
-        vector.set(
-            (event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1,
-            0.5);
-
-        vector.unproject(camera);
-
-        var dir = vector.sub(camera.position).normalize();
-
-        var distance = -camera.position.z / dir.z;
-
-        var pos = camera.position.clone().add(dir.multiplyScalar(distance));
-
-        // console.log(pos);
-        mousePos.ex_x = mousePos.x;
-        mousePos.ex_y = mousePos.y;
-        mousePos.x = pos.x;
-        mousePos.y = pos.y;
-
-        // options.position.x = mousePos.x;
-        // options.position.y = mousePos.y;
-        // options.position.z = 1;
-        // console.log("change pos" + pos.x + " " + pos.y);
-    }
-
-    init();
-    animate();
-
-    function init() {
-
-        container = document.createElement('div');
-        document.body.appendChild(container);
-
-        camera = new THREE.PerspectiveCamera(28, window.innerWidth / window.innerHeight, 1, 10000);
-        camera.position.z = 100;
-
-        scene = new THREE.Scene();
-
-        // The GPU Particle system extends THREE.Object3D, and so you can use it
-        // as you would any other scene graph component.  Particle positions will be
-        // relative to the position of the particle system, but you will probably only need one
-        // system for your whole scene
-        particleSystem = new THREE.GPUParticleSystem({
-            maxParticles: 250000
-        });
-        scene.add(particleSystem);
-
-
-        // options passed during each spawned
-        options = {
-            position: new THREE.Vector3(),
-            positionRandomness: .3,
-            velocity: new THREE.Vector3(),
-            velocityRandomness: .5,
-            color: currentColorHex,
-            colorRandomness: .2,
-            turbulence: 0.1,
-            lifetime: 1,
-            // size: 5,
-            size: 10,
-            sizeRandomness: 1
-        };
-
-        spawnerOptions = {
-            spawnRate: 3000,
-            // spawnRate: 15000,
-            horizontalSpeed: 0,
-            verticalSpeed: 0,
-            timeScale: 1
-        }
-
-        renderer = new THREE.WebGLRenderer();
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        container.appendChild(renderer.domElement);
-
-        window.addEventListener('resize', onWindowResize, false);
-
-    }
-
-    function onWindowResize() {
-
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-
-        renderer.setSize(window.innerWidth, window.innerHeight);
-
-    }
-
-    function animate() {
-
-        requestAnimationFrame(animate);
-
-        var delta = clock.getDelta() * spawnerOptions.timeScale;
-        tick += delta;
-
-        if (tick < 0) tick = 0;
-
-        if (delta > 0) {
-            // options.position.x = Math.sin(tick * spawnerOptions.horizontalSpeed) * 20;
-            // options.position.y = Math.sin(tick * spawnerOptions.verticalSpeed) * 10;
-            // options.position.z = Math.sin(tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed) * 5;
-            // console.log(Math.sin(tick * spawnerOptions.horizontalSpeed) * 20);
-            // console.log(Math.sin(tick * spawnerOptions.verticalSpeed) * 10);
-            // console.log(mousePos);
-            // console.log("animate");
-            maxSpawn = spawnerOptions.spawnRate * delta;
-            for (var x = 0; x < maxSpawn; x++) {
-                percent = x / maxSpawn;
-                options.position.x = mousePos.ex_x * (1 - percent) + mousePos.x * percent;
-                options.position.y = mousePos.ex_y * (1 - percent) + mousePos.y * percent;
-                // Yep, that's really it.  Spawning particles is super cheap, and once you spawn them, the rest of
-                // their lifecycle is handled entirely on the GPU, driven by a time uniform updated below
-                particleSystem.spawnParticle(options);
-            }
-        }
-
-        particleSystem.update(tick);
-
-        render();
-
-    }
-
-    function render() {
-
-        renderer.render(scene, camera);
-
-    }
-    </script>
+  }
+  </script>
 </body>
 
 </html>
