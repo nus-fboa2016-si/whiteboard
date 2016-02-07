@@ -35,12 +35,16 @@
       <circle id="circle" cx="50" cy="50" r="15" fill="#aa88ff" />
     </svg>
   </div>
+  <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
   <script src="./js/three.min.js"></script>
   <script src="./js/GPUParticleSystem.js" charset="utf-8"></script>
   <script>
+
+  var socket = io();
+
   var camera, tick = 0,
     scene, renderer, clock = new THREE.Clock(true),
     controls, container,
@@ -51,6 +55,7 @@
 
   var localDrawingAgent = "local";
   var agents = {};
+
 
   function DrawingAgent(name, color) {
     this.name = name;
@@ -188,8 +193,10 @@
     var vector = new THREE.Vector3();
 
     vector.set(
-      (event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1,
-      0.5);
+      (event.clientX / window.innerWidth) * 2 - 1,
+      -(event.clientY / window.innerHeight) * 2 + 1,
+      0.5
+    );
 
     vector.unproject(camera);
 
@@ -213,6 +220,7 @@
 
   init();
   animate();
+
 
   function init() {
 
@@ -321,7 +329,6 @@
 
   }
 
-
   function drawLine(color, x0, y0, x1, y1) {
     var material = new THREE.LineBasicMaterial({
       color: color,
@@ -331,7 +338,7 @@
     //   color: color,
     //   size: 3.0
     // });
-    // console.log(x0 + "," + y0 + " " + x1 + "," + y1);
+//    console.log(x0 + "," + y0 + " " + x1 + "," + y1);
     var geometry = new THREE.Geometry();
     geometry.vertices.push(
       new THREE.Vector3(x0, y0, -1),
@@ -341,10 +348,11 @@
     var line = new THREE.Line(geometry, material);
     // var points = new THREE.Points(geometry, material);
     scene.add(line);
+    socket.emit('draw line', x0, y0, x1, y1);
   }
 
   function render() {
-
+    //requestAnimationFrame(render);
     renderer.render(scene, camera);
 
   }
