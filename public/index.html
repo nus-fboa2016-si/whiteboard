@@ -220,7 +220,7 @@
 
   init();
   animate();
-
+  socket.on("draw line", drawLine);
 
   function init() {
 
@@ -348,7 +348,7 @@
     var line = new THREE.Line(geometry, material);
     // var points = new THREE.Points(geometry, material);
     scene.add(line);
-    socket.emit('draw line', x0, y0, x1, y1);
+    socket.emit('draw line', color, x0, y0, x1, y1);
   }
 
   function render() {
