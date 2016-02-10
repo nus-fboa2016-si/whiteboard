@@ -4,7 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 var numConnected = 0;
-
+var msgCount = 0;
 app.use(express.static('public'));
 
 app.get('/', function(req, res) {
@@ -18,6 +18,7 @@ io.on('connection', function(socket) {
     });
     socket.on('draw line', function(color, x0, y0, x1, y1) {
         //console.log(color + "  " + x0 + "," + y0 + " " + x1 + "," + y1);
+        console.log()
         socket.broadcast.emit('draw line', color, x0, y0, x1, y1);
     });
 });

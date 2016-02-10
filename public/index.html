@@ -155,14 +155,14 @@
   document.onmouseup = handleMouseUp;
 
   function handleMouseUp(event) {
-    console.log("stopDrawing");
+//    console.log("stopDrawing");
     agents[localDrawingAgent].stopDrawing();
     // options = defaultOptions;
     // spawnerOptions.spawnRate = 3000;
   }
 
   function handleMouseDown(event) {
-    console.log("startDrawing");
+//    console.log("startDrawing");
     agents[localDrawingAgent].startDrawing();
     // options = drawingOptions;
     // spawnerOptions.spawnRate = 1000;
@@ -220,7 +220,11 @@
 
   init();
   animate();
-  socket.on("draw line", drawLine);
+  var msgcount = 0;
+  socket.on("draw line", function () {
+    console.log(msgcount++);
+    drawLine.apply(null, arguments);
+  });
 
   function init() {
 
@@ -258,8 +262,7 @@
     };
 
     spawnerOptions = {
-      // spawnRate: 3000,
-      spawnRate: 5000,
+      spawnRate: 3000,
       horizontalSpeed: 0,
       verticalSpeed: 0,
       timeScale: 1
@@ -319,6 +322,7 @@
         var agent = agents[key];
         if (agent.isDrawing && !agent.isConfiguring) {
           drawLine(agent.color, agent.mousePos.ex_x, agent.mousePos.ex_y, agent.mousePos.x, agent.mousePos.y);
+          socket.emit('draw line', agent.color, agent.mousePos.ex_x, agent.mousePos.ex_y, agent.mousePos.x, agent.mousePos.y);
         }
       }
     }
@@ -348,7 +352,6 @@
     var line = new THREE.Line(geometry, material);
     // var points = new THREE.Points(geometry, material);
     scene.add(line);
-    socket.emit('draw line', color, x0, y0, x1, y1);
   }
 
   function render() {
