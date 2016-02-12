@@ -87,6 +87,9 @@
 
     this.stopDrawing = function() {
       this.isDrawing = false;
+
+      // clear previous mouse positions
+      this.mousePos = null;
     }
 
     this.startConfiguring = function() {
