@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>three.js - gpu particle system</title>
+  <title>socket.io whiteboard example</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
   <style>
@@ -42,7 +42,6 @@
   <script src="./js/three.min.js"></script>
   <script src="./js/GPUParticleSystem.js" charset="utf-8"></script>
   <script>
-
   var socket = io();
 
   var camera, tick = 0,
@@ -141,28 +140,24 @@
       agents[localDrawingAgent].color = currentColorHex;
     },
     hide: function(color) {
-        console.log("hide");
-        agents[localDrawingAgent].stopConfiguring();
+      console.log("hide");
+      agents[localDrawingAgent].stopConfiguring();
     },
     show: function(color) {
-        console.log("show");
-        agents[localDrawingAgent].startConfiguring();
+      console.log("show");
+      agents[localDrawingAgent].startConfiguring();
     }
   });
 
-  document.onmousemove = handleMouseMove;
-  document.onmousedown = handleMouseDown;
-  document.onmouseup = handleMouseUp;
-
   function handleMouseUp(event) {
-//    console.log("stopDrawing");
+    //    console.log("stopDrawing");
     agents[localDrawingAgent].stopDrawing();
     // options = defaultOptions;
     // spawnerOptions.spawnRate = 3000;
   }
 
   function handleMouseDown(event) {
-//    console.log("startDrawing");
+    //    console.log("startDrawing");
     agents[localDrawingAgent].startDrawing();
     // options = drawingOptions;
     // spawnerOptions.spawnRate = 1000;
@@ -193,8 +188,7 @@
     var vector = new THREE.Vector3();
 
     vector.set(
-      (event.clientX / window.innerWidth) * 2 - 1,
-      -(event.clientY / window.innerHeight) * 2 + 1,
+      (event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1,
       0.5
     );
 
@@ -218,10 +212,56 @@
     // console.log("change pos" + pos.x + " " + pos.y);
   }
 
+  // Map touch events to mouse events
+  function touchHandler(event) {
+    var touches = event.changedTouches,
+      first = touches[0],
+      type = "";
+    switch (event.type) {
+      case "touchstart":
+        type = "mousedown";
+        break;
+      case "touchmove":
+        type = "mousemove";
+        break;
+      case "touchend":
+        type = "mouseup";
+        break;
+      default:
+        return;
+    }
+
+    // initMouseEvent(type, canBubble, cancelable, view, clickCount, 
+    //                screenX, screenY, clientX, clientY, ctrlKey, 
+    //                altKey, shiftKey, metaKey, button, relatedTarget);
+
+    var simulatedEvent = document.createEvent("MouseEvent");
+    simulatedEvent.initMouseEvent(type, true, true, window, 1,
+      first.screenX, first.screenY,
+      first.clientX, first.clientY, false,
+      false, false, false, 0 /*left*/ , null);
+
+    first.target.dispatchEvent(simulatedEvent);
+    event.preventDefault();
+  }
+
+  function initEventListeners() {
+    document.onmousemove = handleMouseMove;
+    document.onmousedown = handleMouseDown;
+    document.onmouseup = handleMouseUp;
+
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
+    document.addEventListener("touchcancel", touchHandler, true);
+  }
+
+  initEventListeners();
+
   init();
   animate();
   var msgcount = 0;
-  socket.on("draw line", function () {
+  socket.on("draw line", function() {
     console.log(msgcount++);
     drawLine.apply(null, arguments);
   });
@@ -268,7 +308,9 @@
       timeScale: 1
     }
 
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer({
+      antialias: true
+    });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
@@ -339,7 +381,7 @@
       color: color,
       size: 0.5
     });
-//    console.log(x0 + "," + y0 + " " + x1 + "," + y1);
+    //    console.log(x0 + "," + y0 + " " + x1 + "," + y1);
 
     // Two points at start and end of the line to smooth turning points
     var geometryPointS = new THREE.Geometry();
