@@ -306,7 +306,7 @@
       maxSpawn = spawnerOptions.spawnRate * delta;
 
       var mousePos = agents[localDrawingAgent].mousePos;
-      if (mousePos) {
+      if (mousePos && agents[localDrawingAgent].isDrawing) {
         for (var x = 0; x < maxSpawn; x++) {
           percent = x / maxSpawn;
           options.position.x = mousePos.ex_x * (1 - percent) + mousePos.x * percent;
