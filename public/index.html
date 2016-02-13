@@ -104,34 +104,6 @@
 
   agents[localDrawingAgent] = new DrawingAgent(localDrawingAgent, currentColorHex);
 
-  // var defaultOptions = {
-  //   position: new THREE.Vector3(),
-  //   positionRandomness: .3,
-  //   velocity: new THREE.Vector3(),
-  //   velocityRandomness: .5,
-  //   color: currentColorHex,
-  //   colorRandomness: .2,
-  //   turbulence: 0.1,
-  //   lifetime: 1,
-  //   // size: 5,
-  //   size: 10,
-  //   sizeRandomness: 1
-  // };
-
-  // var drawingOptions = {
-  //   position: new THREE.Vector3(),
-  //   positionRandomness: 0,
-  //   velocity: new THREE.Vector3(),
-  //   velocityRandomness: 0,
-  //   color: currentColorHex,
-  //   colorRandomness: 0,
-  //   turbulence: 0,
-  //   lifetime: 10,
-  //   // size: 5,
-  //   size: 10,
-  //   sizeRandomness: 1
-  // }
-
   $("#circle").spectrum({
     color: defaultColor,
     showButtons: false,
@@ -153,17 +125,11 @@
   });
 
   function handleMouseUp(event) {
-    //    console.log("stopDrawing");
     agents[localDrawingAgent].stopDrawing();
-    // options = defaultOptions;
-    // spawnerOptions.spawnRate = 3000;
   }
 
   function handleMouseDown(event) {
-    //    console.log("startDrawing");
     agents[localDrawingAgent].startDrawing();
-    // options = drawingOptions;
-    // spawnerOptions.spawnRate = 1000;
   }
 
   function handleMouseMove(event) {
@@ -203,16 +169,7 @@
 
     var pos = camera.position.clone().add(dir.multiplyScalar(distance));
 
-    // console.log(pos);
-    // mousePos.ex_x = mousePos.x;
-    // mousePos.ex_y = mousePos.y;
-    // mousePos.x = pos.x;
-    // mousePos.y = pos.y;
     agents[localDrawingAgent].updatePos(pos.x, pos.y);
-    // options.position.x = mousePos.x;
-    // options.position.y = mousePos.y;
-    // options.position.z = 1;
-    // console.log("change pos" + pos.x + " " + pos.y);
   }
 
   // Map touch events to mouse events
@@ -341,13 +298,6 @@
     if (tick < 0) tick = 0;
 
     if (delta > 0) {
-      // options.position.x = Math.sin(tick * spawnerOptions.horizontalSpeed) * 20;
-      // options.position.y = Math.sin(tick * spawnerOptions.verticalSpeed) * 10;
-      // options.position.z = Math.sin(tick * spawnerOptions.horizontalSpeed + spawnerOptions.verticalSpeed) * 5;
-      // console.log(Math.sin(tick * spawnerOptions.horizontalSpeed) * 20);
-      // console.log(Math.sin(tick * spawnerOptions.verticalSpeed) * 10);
-      // console.log(mousePos);
-      // console.log("animate");
       maxSpawn = spawnerOptions.spawnRate * delta;
 
       var mousePos = agents[localDrawingAgent].mousePos;
@@ -356,8 +306,7 @@
           percent = x / maxSpawn;
           options.position.x = mousePos.ex_x * (1 - percent) + mousePos.x * percent;
           options.position.y = mousePos.ex_y * (1 - percent) + mousePos.y * percent;
-          // Yep, that's really it.  Spawning particles is super cheap, and once you spawn them, the rest of
-          // their lifecycle is handled entirely on the GPU, driven by a time uniform updated below
+          
           particleSystem.spawnParticle(options);
         }
       }
