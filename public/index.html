@@ -205,6 +205,14 @@
     event.preventDefault();
   }
 
+  function keypressHandler(event) {
+    var key = event.which || event.keyCode;
+    if(key === 99) {
+      // "c" pressed
+      clearScreen();
+    }
+  }
+
   function initEventListeners() {
     document.onmousemove = handleMouseMove;
     document.onmousedown = handleMouseDown;
@@ -214,6 +222,8 @@
     document.addEventListener("touchmove", touchHandler, true);
     document.addEventListener("touchend", touchHandler, true);
     document.addEventListener("touchcancel", touchHandler, true);
+
+    document.addEventListener("keypress", keypressHandler, true);
   }
 
   initEventListeners();
@@ -306,7 +316,7 @@
           percent = x / maxSpawn;
           options.position.x = mousePos.ex_x * (1 - percent) + mousePos.x * percent;
           options.position.y = mousePos.ex_y * (1 - percent) + mousePos.y * percent;
-          
+
           particleSystem.spawnParticle(options);
         }
       }
@@ -336,19 +346,19 @@
     //    console.log(x0 + "," + y0 + " " + x1 + "," + y1);
 
     // Two points at start and end of the line to smooth turning points
-    var geometryPointS = new THREE.Geometry();
-    geometryPointS.vertices.push(
-      new THREE.Vector3(x0, y0, -1)
-    );
-    var pointStart = new THREE.Points(geometryPointS, material);
-    scene.add(pointStart);
+    // var geometryPointS = new THREE.Geometry();
+    // geometryPointS.vertices.push(
+    //   new THREE.Vector3(x0, y0, -1)
+    // );
+    // var pointStart = new THREE.Points(geometryPointS, material);
+    // scene.add(pointStart);
 
-    var geometryPointE = new THREE.Geometry();
-    geometryPointE.vertices.push(
-      new THREE.Vector3(x1, y1, -1)
-    );
-    var pointEnd = new THREE.Points(geometryPointE, material);
-    scene.add(pointEnd);
+    // var geometryPointE = new THREE.Geometry();
+    // geometryPointE.vertices.push(
+    //   new THREE.Vector3(x1, y1, -1)
+    // );
+    // var pointEnd = new THREE.Points(geometryPointE, material);
+    // scene.add(pointEnd);
 
     var materialLine = new THREE.LineBasicMaterial({
       color: color,
@@ -367,6 +377,14 @@
     //requestAnimationFrame(render);
     renderer.render(scene, camera);
 
+  }
+
+  function clearScreen() {
+    for (var i = scene.children.length - 1; i > 0; i--) {
+      // first element is THREE.GPUParticleSystem which should not be removed
+      // console.log(obj instanceof THREE.GPUParticleSystem);
+      scene.remove(scene.children[i]);
+    }
   }
   </script>
 </body>
