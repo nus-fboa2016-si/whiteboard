@@ -7,9 +7,9 @@ var numConnected = 0;
 var msgCount = 0;
 app.use(express.static('public'));
 
-app.get('/', function(req, res) {
-    res.sendFile(__dirname + '/index2.html');
-});
+//app.get('/', function(req, res) {
+//    res.sendFile(__dirname + '/index.html');
+//});
 
 io.on('connection', function(socket) {
     console.log('connected: ' + ++numConnected);
