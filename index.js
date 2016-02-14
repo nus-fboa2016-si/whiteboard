@@ -17,8 +17,6 @@ io.on('connection', function(socket) {
         console.log('connected: ' + --numConnected);
     });
     socket.on('draw line', function(color, x0, y0, x1, y1) {
-        //console.log(color + "  " + x0 + "," + y0 + " " + x1 + "," + y1);
-        console.log()
         socket.broadcast.emit('draw line', color, x0, y0, x1, y1);
     });
 });

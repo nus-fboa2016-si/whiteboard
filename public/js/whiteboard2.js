@@ -1,3 +1,7 @@
+var socket = io();
+
+socket.on('draw line', drawLine);
+
 var baseCanvas = document.getElementById('whiteboard-base');
 var baseContext = baseCanvas.getContext('2d');
 
@@ -7,16 +11,15 @@ baseContext.canvas.height = window.innerHeight;
 baseContext.lineCap = 'round';
 baseContext.lineJoin = 'round';
 
-baseCanvas.addEventListener('mousedown', startDraw, false);
-baseCanvas.addEventListener('mousemove', draw, false);
-baseCanvas.addEventListener('mouseup', endDraw, false);
+baseCanvas.addEventListener('mousedown', onMouseDown, false);
+baseCanvas.addEventListener('mousemove', onMouseMove, false);
+baseCanvas.addEventListener('mouseup', onMouseUp, false);
 
-
-function startDraw() {
+function onMouseDown() {
   isDrawing = true;
 }
 
-function endDraw() {
+function onMouseUp() {
   isDrawing = false;
   clearPrevMousePos();
 }
@@ -25,29 +28,32 @@ var isDrawing = false;
 var prevX = null;
 var prevY = null;
 
-function draw(e) {
+function onMouseMove(e) {
   if (isDrawing) {
     var x = e.offsetX || e.pageX - canvas.offsetLeft;
     var y = e.offsetY || e.pageY - canvas.offsetTop;
-    drawLine({
+    var newLine = {
       startX: prevX === null? x : prevX,
       startY: prevY === null? y : prevY,
       endX: x,
       endY: y,
       width: 1,
-      color: 'yellowgreen',
-    });
+      color: 'yellowgreen'
+    };
+    drawLine(newLine);
+    socket.emit('draw line', newLine);
     updatePrevMousePos(x, y);
   }
 }
 
 function drawLine(line) {
-  baseContext.strokeStyle = line.color;
-  baseContext.lineWidth = line.width;
-  baseContext.beginPath();
-  baseContext.moveTo(line.startX, line.startY);
-  baseContext.lineTo(line.endX, line.endY);
-  baseContext.stroke();
+  var ctx = baseContext;
+  ctx.strokeStyle = line.color;
+  ctx.lineWidth = line.width;
+  ctx.beginPath();
+  ctx.moveTo(line.startX, line.startY);
+  ctx.lineTo(line.endX, line.endY);
+  ctx.stroke();
 }
 
 function updatePrevMousePos(x, y) {
