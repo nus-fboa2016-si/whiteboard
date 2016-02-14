@@ -1,55 +1,61 @@
-var canvas = document.getElementById('whiteboard');
-var whiteboard = canvas.getContext('2d');
+var baseCanvas = document.getElementById('whiteboard-base');
+var baseContext = baseCanvas.getContext('2d');
 
-whiteboard.canvas.width = window.innerWidth;
-whiteboard.canvas.height = window.innerHeight;
+baseContext.canvas.width = window.innerWidth;
+baseContext.canvas.height = window.innerHeight;
 
-var socket = io();
+baseContext.lineCap = 'round';
+baseContext.lineJoin = 'round';
 
-whiteboard.lineWidth = '10';
-whiteboard.lineCap = 'round';
-whiteboard.lineJoin = 'round';
+baseCanvas.addEventListener('mousedown', startDraw, false);
+baseCanvas.addEventListener('mousemove', draw, false);
+baseCanvas.addEventListener('mouseup', endDraw, false);
 
-var color = 'yellowgreen';
 
-canvas.addEventListener('mousedown', startDraw, false);
-canvas.addEventListener('mousemove', draw, false);
-canvas.addEventListener('mouseup', endDraw, false);
-
-function drawOnCanvas(color, plots) {
-  whiteboard.strokeStyle = color;
-  whiteboard.beginPath();
-  whiteboard.moveTo(plots[0].x, plots[0].y);
-
-  for(var i=1; i<plots.length; i++) {
-    whiteboard.lineTo(plots[i].x, plots[i].y);
-  }
-  whiteboard.stroke();
+function startDraw() {
+  isDrawing = true;
 }
 
-function drawFromStream(message) {
-  if(!message || message.plots.length < 1) return;
-  drawOnCanvas(message.color, message.plots);
+function endDraw() {
+  isDrawing = false;
+  clearPrevMousePos();
 }
 
-var isActive = false;
-var plots = [];
+var isDrawing = false;
+var prevX = null;
+var prevY = null;
 
 function draw(e) {
-  if(!isActive) return;
-
-  var x = e.offsetX || e.layerX - canvas.offsetLeft;
-  var y = e.offsetY || e.layerY - canvas.offsetTop;
-
-  plots.push({x: x, y: y});
-  drawOnCanvas(color, plots);
+  if (isDrawing) {
+    var x = e.offsetX || e.pageX - canvas.offsetLeft;
+    var y = e.offsetY || e.pageY - canvas.offsetTop;
+    drawLine({
+      startX: prevX === null? x : prevX,
+      startY: prevY === null? y : prevY,
+      endX: x,
+      endY: y,
+      width: 1,
+      color: 'yellowgreen',
+    });
+    updatePrevMousePos(x, y);
+  }
 }
 
-function startDraw(e) {
-  isActive = true;
+function drawLine(line) {
+  baseContext.strokeStyle = line.color;
+  baseContext.lineWidth = line.width;
+  baseContext.beginPath();
+  baseContext.moveTo(line.startX, line.startY);
+  baseContext.lineTo(line.endX, line.endY);
+  baseContext.stroke();
 }
 
-function endDraw(e) {
-  isActive = false;
-  plots = [];
+function updatePrevMousePos(x, y) {
+  prevX = x;
+  prevY = y;
+}
+
+function clearPrevMousePos() {
+  prevX = null;
+  prevY = null;
 }
