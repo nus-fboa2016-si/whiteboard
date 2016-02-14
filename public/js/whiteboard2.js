@@ -1,19 +1,45 @@
-var socket = io();
 
-socket.on('draw line', drawLine);
+var socket;
+var isDrawing,
+    prevX,
+    prevY;
+var baseCanvas,
+    baseContext,
+    prevX,
+    prevY,
+    isDrawing;
 
-var baseCanvas = document.getElementById('whiteboard-base');
-var baseContext = baseCanvas.getContext('2d');
 
-baseContext.canvas.width = window.innerWidth;
-baseContext.canvas.height = window.innerHeight;
+init();
 
-baseContext.lineCap = 'round';
-baseContext.lineJoin = 'round';
 
-baseCanvas.addEventListener('mousedown', onMouseDown, false);
-baseCanvas.addEventListener('mousemove', onMouseMove, false);
-baseCanvas.addEventListener('mouseup', onMouseUp, false);
+function init() {
+  initLocalDrawing();
+  initMsgPassing();
+}
+
+function initMsgPassing() {
+  socket = io();
+  socket.on('draw line', drawLine);
+}
+
+function initLocalDrawing() {
+  baseCanvas = document.getElementById('whiteboard-base');
+  baseContext = baseCanvas.getContext('2d');
+  prevX = null;
+  prevY = null;
+  isDrawing = false;
+
+  baseCanvas.width = window.innerWidth;
+  baseCanvas.height = window.innerHeight;
+
+  baseContext.lineCap = 'round';
+  baseContext.lineJoin = 'round';
+
+  baseCanvas.addEventListener('mousedown', onMouseDown, false);
+  baseCanvas.addEventListener('mousemove', onMouseMove, false);
+  baseCanvas.addEventListener('mouseup', onMouseUp, false);
+}
 
 function onMouseDown() {
   isDrawing = true;
@@ -23,10 +49,6 @@ function onMouseUp() {
   isDrawing = false;
   clearPrevMousePos();
 }
-
-var isDrawing = false;
-var prevX = null;
-var prevY = null;
 
 function onMouseMove(e) {
   if (isDrawing) {
