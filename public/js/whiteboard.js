@@ -15,25 +15,28 @@ var agents = {};
 function DrawingAgent(name, color) {
   this.name = name;
   this.color = color;
-  this.mousePos = null;
+  this.mousePos = [];
   this.isDrawing = false;
   this.isConfiguring = false;
 
   this.updatePos = function(newX, newY) {
     newX = Math.round(newX * 100) / 100;
     newY = Math.round(newY * 100) / 100;
-    if (this.mousePos === null) {
-      this.mousePos = {
-        x: newX,
-        y: newY,
-        ex_x: newX,
-        ex_y: newY
-      }
+    if (this.mousePos.length === 0) {
+      // this.mousePos = {
+      //   x: newX,
+      //   y: newY,
+      //   ex_x: newX,
+      //   ex_y: newY
+      // }
+      this.mousePos.push([newX, newY]);
+      this.mousePos.push([newX, newY]);
     } else {
-      this.mousePos.ex_x = this.mousePos.x;
-      this.mousePos.ex_y = this.mousePos.y;
-      this.mousePos.x = newX;
-      this.mousePos.y = newY;
+      this.mousePos.push([newX, newY]);
+      // this.mousePos.ex_x = this.mousePos.x;
+      // this.mousePos.ex_y = this.mousePos.y;
+      // this.mousePos.x = newX;
+      // this.mousePos.y = newY;
     }
   };
 
@@ -45,7 +48,7 @@ function DrawingAgent(name, color) {
     this.isDrawing = false;
 
     // clear previous mouse positions
-    this.mousePos = null;
+    this.mousePos = [];
   }
 
   this.startConfiguring = function() {
@@ -125,7 +128,9 @@ function handleMouseMove(event) {
 
   var pos = camera.position.clone().add(dir.multiplyScalar(distance));
 
-  agents[localDrawingAgent].updatePos(pos.x, pos.y);
+  if (agents[localDrawingAgent].isDrawing) {
+    agents[localDrawingAgent].updatePos(pos.x, pos.y);
+  }
 }
 
 // Map touch events to mouse events
@@ -215,16 +220,16 @@ function init() {
   // options passed during each spawned
   options = {
     position: new THREE.Vector3(),
-    // positionRandomness: .3,
-    positionRandomness: 0,
+    positionRandomness: .3,
+    // positionRandomness: 0,
     velocity: new THREE.Vector3(),
-    velocityRandomness: 0,
-    // velocityRandomness: .5,
+    // velocityRandomness: 0,
+    velocityRandomness: .5,
     color: currentColorHex,
     colorRandomness: .2,
     turbulence: 0.1,
-    // lifetime: .4,
-    lifetime: 10.4,
+    lifetime: .4,
+    // lifetime: 10.4,
     // size: 5,
     size: 10,
     sizeRandomness: 1
@@ -282,18 +287,31 @@ function animate() {
   }
   for (var key in agents) {
     if (agents.hasOwnProperty(key)) {
-      var agent = agents[key];
-      if (agent.isDrawing && !agent.isConfiguring) {
-        drawLine(agent.color, agent.mousePos.ex_x, agent.mousePos.ex_y, agent.mousePos.x, agent.mousePos.y);
-        socket.emit('draw line', agent.color, agent.mousePos.ex_x, agent.mousePos.ex_y, agent.mousePos.x, agent.mousePos.y);
-      }
+      drawForAgent(agents[key]);
     }
   }
 
   particleSystem.update(tick);
-
   render();
 
+}
+
+function drawForAgent(agent) {
+  if (!agent.isDrawing || agent.isConfiguring) {
+    return;
+  }
+  if (agent.mousePos.length >= 2) {
+    var posEx = agent.mousePos.shift();
+    var pos = agent.mousePos[agent.mousePos.length - 1];
+    // Interpolate between points
+    drawLine(agent.color, posEx[0], posEx[1], pos[0], pos[1]);
+    socket.emit('draw line', agent.color, posEx[0], posEx[1], pos[0], pos[1]);
+
+    // Leave only the last point
+    agent.mousePos = [pos];
+    // drawLine(agent.color, agent.mousePos.ex_x, agent.mousePos.ex_y, agent.mousePos.x, agent.mousePos.y);
+    // socket.emit('draw line', agent.color, agent.mousePos.ex_x, agent.mousePos.ex_y, agent.mousePos.x, agent.mousePos.y);
+  }
 }
 
 function drawLine(color, x0, y0, x1, y1) {
@@ -328,7 +346,6 @@ function drawLine(color, x0, y0, x1, y1) {
     new THREE.Vector3(x0, y0, -1),
     new THREE.Vector3(x1, y1, -1)
   );
-  console.log(x0 + "," + y0 + " - " + x1 + "," + y1);
   var line = new THREE.Line(geometry, materialLine);
   scene.add(line);
 }
