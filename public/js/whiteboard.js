@@ -276,10 +276,12 @@ function animate() {
 
     var mousePos = agents[localDrawingAgent].mousePos;
     if (mousePos && agents[localDrawingAgent].isDrawing) {
+      var posEx = mousePos[0];
+      var pos = mousePos[mousePos.length - 1];
       for (var x = 0; x < maxSpawn; x++) {
         percent = x / maxSpawn;
-        options.position.x = mousePos.ex_x * (1 - percent) + mousePos.x * percent;
-        options.position.y = mousePos.ex_y * (1 - percent) + mousePos.y * percent;
+        options.position.x = posEx[0] * (1 - percent) + pos[0] * percent;
+        options.position.y = posEx[1] * (1 - percent) + pos[1] * percent;
 
         particleSystem.spawnParticle(options);
       }
