@@ -64,8 +64,8 @@
     this.isConfiguring = false;
 
     this.updatePos = function(newX, newY) {
-      // newX = Math.round(newX * 100) / 100;
-      // newY = Math.round(newY * 100) / 100;
+      newX = Math.round(newX * 100) / 100;
+      newY = Math.round(newY * 100) / 100;
       if (this.mousePos === null) {
         this.mousePos = {
           x: newX,
@@ -259,13 +259,16 @@
     // options passed during each spawned
     options = {
       position: new THREE.Vector3(),
-      positionRandomness: .3,
+      // positionRandomness: .3,
+      positionRandomness: 0,
       velocity: new THREE.Vector3(),
-      velocityRandomness: .5,
+      velocityRandomness: 0,
+      // velocityRandomness: .5,
       color: currentColorHex,
       colorRandomness: .2,
       turbulence: 0.1,
-      lifetime: 0.4,
+      // lifetime: .4,
+      lifetime: 10.4,
       // size: 5,
       size: 10,
       sizeRandomness: 1
@@ -369,6 +372,7 @@
       new THREE.Vector3(x0, y0, -1),
       new THREE.Vector3(x1, y1, -1)
     );
+    console.log(x0 + "," + y0 + " - " + x1 + "," + y1);
     var line = new THREE.Line(geometry, materialLine);
     scene.add(line);
   }
