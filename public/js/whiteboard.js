@@ -1,9 +1,9 @@
 var socket = io();
 
 var camera, tick = 0,
-  scene, renderer, clock = new THREE.Clock(true),
-  controls, container,
-  options, spawnerOptions, particleSystem;
+    scene, renderer, clock = new THREE.Clock(true),
+    container,
+    options, spawnerOptions, particleSystem;
 
 var defaultColor = currentColor = "#aa88ff";
 var currentColorHex = 0xaa88ff;
@@ -136,8 +136,8 @@ function handleMouseMove(event) {
 // Map touch events to mouse events
 function touchHandler(event) {
   var touches = event.changedTouches,
-    first = touches[0],
-    type = "";
+      first = touches[0],
+      type = "";
   switch (event.type) {
     case "touchstart":
       type = "mousedown";
@@ -152,15 +152,15 @@ function touchHandler(event) {
       return;
   }
 
-  // initMouseEvent(type, canBubble, cancelable, view, clickCount, 
-  //                screenX, screenY, clientX, clientY, ctrlKey, 
+  // initMouseEvent(type, canBubble, cancelable, view, clickCount,
+  //                screenX, screenY, clientX, clientY, ctrlKey,
   //                altKey, shiftKey, metaKey, button, relatedTarget);
 
   var simulatedEvent = document.createEvent("MouseEvent");
   simulatedEvent.initMouseEvent(type, true, true, window, 1,
-    first.screenX, first.screenY,
-    first.clientX, first.clientY, false,
-    false, false, false, 0 /*left*/ , null);
+      first.screenX, first.screenY,
+      first.clientX, first.clientY, false,
+      false, false, false, 0 /*left*/ , null);
 
   first.target.dispatchEvent(simulatedEvent);
   event.preventDefault();
@@ -228,8 +228,7 @@ function init() {
     color: currentColorHex,
     colorRandomness: .2,
     turbulence: 0.1,
-    lifetime: .4,
-    // lifetime: 10.4,
+    lifetime: 0.4,
     // size: 5,
     size: 10,
     sizeRandomness: 1

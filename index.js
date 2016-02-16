@@ -7,9 +7,9 @@ var numConnected = 0;
 var msgCount = 0;
 app.use(express.static('public'));
 
-app.get('/', function(req, res) {
-    res.sendFile(__dirname + '/index.html');
-});
+//app.get('/', function(req, res) {
+//    res.sendFile(__dirname + '/index.html');
+//});
 
 io.on('connection', function(socket) {
     console.log('connected: ' + ++numConnected);
@@ -17,8 +17,6 @@ io.on('connection', function(socket) {
         console.log('connected: ' + --numConnected);
     });
     socket.on('draw line', function(color, x0, y0, x1, y1) {
-        //console.log(color + "  " + x0 + "," + y0 + " " + x1 + "," + y1);
-        console.log()
         socket.broadcast.emit('draw line', color, x0, y0, x1, y1);
     });
 });
