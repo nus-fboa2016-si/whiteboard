@@ -198,9 +198,11 @@ socket.on("draw line", function() {
 
 socket.on("user count", function(count) {
   console.log(count);
+  updateCount(count);
 });
 
 function init() {
+  initCount();
   container = document.createElement('div');
   document.body.appendChild(container);
 
