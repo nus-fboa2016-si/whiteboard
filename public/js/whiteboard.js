@@ -193,12 +193,14 @@ init();
 animate();
 var msgcount = 0;
 socket.on("draw line", function() {
-  console.log(msgcount++);
   drawLine.apply(null, arguments);
 });
 
-function init() {
+socket.on("user count", function(count) {
+  console.log(count);
+});
 
+function init() {
   container = document.createElement('div');
   document.body.appendChild(container);
 
@@ -275,7 +277,7 @@ function animate() {
     maxSpawn = spawnerOptions.spawnRate * delta;
 
     var mousePos = agents[localDrawingAgent].mousePos;
-    if (mousePos && agents[localDrawingAgent].isDrawing) {
+    if (mousePos && agents[localDrawingAgent].isDrawing && mousePos.length >= 1) {
       var posEx = mousePos[0];
       var pos = mousePos[mousePos.length - 1];
       for (var x = 0; x < maxSpawn; x++) {
