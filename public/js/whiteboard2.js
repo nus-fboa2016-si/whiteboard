@@ -1,12 +1,16 @@
 function createWhiteboard(containerElement) {
 
-  var containerZ;
+  var containerZ,
+      containerWidth, containerHeight;
 
   var socket;
 
-  var drawCanvasElement, drawContext,
-      colorVal, size, // colorVal is a number
-      mousePosTracker,       // relative to container
+  var mousePosTracker,  // relative to container
+      spawnPosTracker;  // unprojected 3d world coordinates
+
+  var drawCanvas, drawCtx,
+      colorVal, size,   // colorVal is a number
+      cacheCanvas, cacheCtx,        // hidden, used to redraw canvas on resize
       isDrawing,
       DRAW_LAYER_RELATIVE_Z = 0,   // bottom layer
       COLOR_PICKER_RELATIVE_Z = 2; // top layer
@@ -15,7 +19,6 @@ function createWhiteboard(containerElement) {
       clock, tick,
       particleSystem,
       particleOpts,
-      spawnPosTracker,
       spawnerOpts,
       FX_LAYER_RELATIVE_Z = 1;  // middle layer
 
@@ -24,23 +27,25 @@ function createWhiteboard(containerElement) {
 
 
   function init() {
-    containerZ = getZIndex(containerElement);
+    initContainerDimensions();
+
     initDrawLayer();
     initGFXLayer();
+
     initPosTrackers();
     animate();
+
     initSocket();
     initEventHandlers();
-    //window.ps = particleSystem;
+  }
+
+  function initContainerDimensions() {
+    containerZ = getZIndex(containerElement);
+    containerWidth = containerElement.offsetWidth;
+    containerHeight = containerElement.offsetHeight;
   }
 
   ////////////////// events
-
-  function initPosTrackers() {
-    mousePosTracker = {};
-    spawnPosTracker = {};
-    resetPosTrackers();
-  }
 
   function initEventHandlers() {
     containerElement.addEventListener('mousedown', handleMousePress);
@@ -54,7 +59,8 @@ function createWhiteboard(containerElement) {
 
     containerElement.addEventListener('keypress', handleKeypress, true);
 
-    window.addEventListener('resize', handleResize, true);
+    var RESIZE_HANDLING_RATE = 25; // 25fps resizing responsiveness
+    window.addEventListener('resize', createResizeHandler(RESIZE_HANDLING_RATE)); // createResizeHandler must be evaluated!
   }
 
   function handleTouch(e) {
@@ -92,13 +98,9 @@ function createWhiteboard(containerElement) {
     }
   }
 
-  function handleResize(e) {
-    
-  }
-
   function handleMousePress(e) {
-    var x = e.offsetX || e.pageX - drawCanvasElement.offsetLeft;
-    var y = e.offsetY || e.pageY - drawCanvasElement.offsetTop;
+    var x = e.offsetX || e.pageX - drawCanvas.offsetLeft;
+    var y = e.offsetY || e.pageY - drawCanvas.offsetTop;
     updatePosTrackers(x,y);
     isDrawing = true;
   }
@@ -113,7 +115,6 @@ function createWhiteboard(containerElement) {
 
     var x = e.offsetX || e.pageX - containerElement.offsetLeft;
     var y = e.offsetY || e.pageY - containerElement.offsetTop;
-    console.log(x + ' ' + y);
     updatePosTrackers(x, y);
     
     var newLine = {
@@ -129,6 +130,46 @@ function createWhiteboard(containerElement) {
     socket.emit('draw line', newLine);
   }
 
+  // wraps actual resize handling code inside closure that throttles rate of resize
+  // events triggering and being handled.
+  // @param targetRate: Number, target rate of resize event handling (per second)
+  function createResizeHandler(targetRate) {
+    var resizeTimeout = null; // closure var to track and control resize rate
+
+    return function() {
+      if (resizeTimeout != null) return; // resize control timer has not cooled down
+      resizeTimeout = setTimeout(
+          function() {
+            resizeTimeout = null;
+            resizeCanvases();
+          },
+          1000/targetRate
+      );
+    };
+  }
+
+  function resizeCanvases() {
+    var w = containerElement.offsetWidth;
+    var h = containerElement.offsetHeight;
+    if (w === containerWidth && h === containerHeight) return;
+
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+
+    fitCanvasToContainer(drawCanvas);
+    var cached = cacheCtx.getImageData(0, 0, w, h);
+    drawCtx.putImageData(cached, 0, 0);
+  }
+
+  //////////////////// coordinate trackers
+
+  function initPosTrackers() {
+    mousePosTracker = {};
+    spawnPosTracker = {};
+    resetPosTrackers();
+  }
+
   function updatePosTrackers(offsetX, offsetY) {
     updateTracker(mousePosTracker, offsetX, offsetY);
     var newSpawnPos = getWorldPosFromCameraPos(offsetX, offsetY);
@@ -138,16 +179,16 @@ function createWhiteboard(containerElement) {
   function resetPosTrackers() {
     var m = mousePosTracker;
     var s = spawnPosTracker;
-    m.newX = 
-      m.newY =
-        m.prevX =
-          m.prevY =
-            null;
+    m.newX =
+        m.newY =
+            m.prevX =
+                m.prevY =
+                    null;
     s.newX =
-      s.newY =
-        s.prevX =
-          s.prevY =
-            null;
+        s.newY =
+            s.prevX =
+                s.prevY =
+                    null;
   }
 
   function updateTracker(tracker, x, y) {
@@ -160,20 +201,24 @@ function createWhiteboard(containerElement) {
   //////////////////// draw canvas
 
   function initDrawLayer() {
-    drawCanvasElement = document.createElement('canvas');
-    containerElement.appendChild(drawCanvasElement);
-    fitCanvasToParent(drawCanvasElement);
+    drawCanvas = document.createElement('canvas');
+    containerElement.appendChild(drawCanvas);
+    fitCanvasToContainer(drawCanvas);
 
-    drawCanvasElement.style.position = 'absolute';
-    drawCanvasElement.style.zIndex = containerZ + DRAW_LAYER_RELATIVE_Z;
+    drawCanvas.style.position = 'absolute';
+    drawCanvas.style.zIndex = containerZ + DRAW_LAYER_RELATIVE_Z;
 
-    drawContext = drawCanvasElement.getContext('2d');
-    drawContext.lineCap = 'round';
-    drawContext.lineJoin = 'round';
+    drawCtx = drawCanvas.getContext('2d');
+    drawCtx.lineCap = 'round';
+    drawCtx.lineJoin = 'round';
 
     colorVal = 0xffffff;
     size = 1;
     isDrawing = false;
+
+    cacheCanvas = document.createElement('canvas'); // this is not in DOM body
+    fitCanvasToContainer(cacheCanvas);
+    cacheCtx = cacheCanvas.getContext('2d');
 
     initColorPicker();
   }
@@ -218,13 +263,48 @@ function createWhiteboard(containerElement) {
   }
 
   function drawLine(line) {
-    var ctx = drawContext;
-    ctx.strokeStyle = line.color;
-    ctx.lineWidth = line.width;
-    ctx.beginPath();
-    ctx.moveTo(line.startX, line.startY);
-    ctx.lineTo(line.endX, line.endY);
-    ctx.stroke();
+    drawLineOnBoard(line);
+    drawLineToCache(line);
+  }
+
+  function drawLineOnBoard(line) {
+    drawCtx.strokeStyle = line.color;
+    drawCtx.lineWidth = line.width;
+    drawCtx.beginPath();
+    drawCtx.moveTo(line.startX, line.startY);
+    drawCtx.lineTo(line.endX, line.endY);
+    drawCtx.stroke();
+  }
+
+  function drawLineToCache(line) {
+    expandCache(
+        Math.max(line.startX, line.endX),
+        Math.max(line.startY, line.endY)
+    );
+    cacheCtx.strokeStyle = line.color;
+    cacheCtx.lineWidth = line.width;
+    cacheCtx.beginPath();
+    cacheCtx.moveTo(line.startX, line.startY);
+    cacheCtx.lineTo(line.endX, line.endY);
+    cacheCtx.stroke();
+  }
+
+  // expands cache if necessary.
+  function expandCache(maxX, maxY) {
+    var width = cacheCanvas.width;
+    var height = cacheCanvas.height;
+    // only resize if new line out of bounds
+    if (height >= maxY && width >= maxX) return;
+
+    var snapshot = cacheCtx.getImageData(0, 0, cacheCanvas.width, cacheCanvas.height);
+    // double dimensions (don't keep resizing for small movements)
+    while (maxX > width || maxY > height) {
+      width *= 2;
+      height *= 2;
+    }
+    cacheCanvas.width = width;
+    cacheCanvas.height = height;
+    cacheCtx.putImageData(snapshot, 0, 0);
   }
 
   function clearScreen() {
@@ -238,14 +318,14 @@ function createWhiteboard(containerElement) {
     tick = 0;
     clock = new THREE.Clock(true);
 
-    camera = new THREE.PerspectiveCamera(28, containerElement.clientWidth / containerElement.clientHeight, 1, 10000);
+    camera = new THREE.PerspectiveCamera(28, containerElement.offsetWidth / containerElement.offsetHeight, 1, 10000);
     camera.position.z = 100;
 
     renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true
     });
-    renderer.setSize(containerElement.clientWidth, containerElement.clientHeight);
+    renderer.setSize(containerElement.offsetWidth, containerElement.offsetHeight);
     renderer.setClearColor(0x000000, 0);
 
 
@@ -260,7 +340,7 @@ function createWhiteboard(containerElement) {
     scene.add(particleSystem);
 
     containerElement.appendChild(renderer.domElement);
-    fitCanvasToParent(renderer.domElement);
+    fitCanvasToContainer(renderer.domElement);
 
     renderer.domElement.style.zIndex = containerZ + FX_LAYER_RELATIVE_Z;
     renderer.domElement.style.position = 'absolute';
@@ -279,12 +359,12 @@ function createWhiteboard(containerElement) {
       color: colorVal,
       colorRandomness: .2,
       turbulence: 0.4,
-      lifetime: 1.5,
+      lifetime: 1,
       size: 20,
       sizeRandomness: 1
     };
     spawnerOpts = {
-      spawnRate: 1500,
+      spawnRate: 1000,
       horizontalSpeed: 0,
       verticalSpeed: 0,
       timeScale: 1
@@ -343,9 +423,9 @@ function createWhiteboard(containerElement) {
 
   ////////////////// utility
 
-  function fitCanvasToParent(canvas){
-    canvas.width  = canvas.parentNode.clientWidth;
-    canvas.height = canvas.parentNode.clientHeight;
+  function fitCanvasToContainer(canvas){
+    canvas.width  = containerElement.offsetWidth;
+    canvas.height = containerElement.offsetHeight;
   }
 
   function getZIndex(element) {
@@ -357,20 +437,8 @@ function createWhiteboard(containerElement) {
   }
 
 }
-function part(x, y) {
-for (var i = 0; i < 500; i++) {
-  var pos = new THREE.Vector3();
-  pos.x = x;
-  pos.y = y;
-ps.spawnParticle({
-  position: pos,
-  positionRandomness: .3,
-  velocity: new THREE.Vector3(),
-  velocityRandomness: .5,
-  color: 0x999999,
-  colorRandomness: .2,
-  turbulence: 0.1,
-  lifetime: 5,
-  size: 10,
-  sizeRandomness: 1
-});}}
+//
+//WRITE TO CACHE
+//CACHE RESIZE
+//CACHE LOAD ON RESIZE
+//COLOR PICKER
