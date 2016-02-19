@@ -465,7 +465,7 @@ THREE.GPUParticleContainer = function(maxParticles, particleSystem) {
 
     self.particleUpdate = true;
 
-  }
+  };
 
   this.update = function(time) {
 

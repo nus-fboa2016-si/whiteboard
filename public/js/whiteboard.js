@@ -239,12 +239,12 @@ function init() {
     horizontalSpeed: 0,
     verticalSpeed: 0,
     timeScale: 1
-  }
+  };
 
   renderer = new THREE.WebGLRenderer({
     antialias: true
   });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  //renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   container.appendChild(renderer.domElement);
 
