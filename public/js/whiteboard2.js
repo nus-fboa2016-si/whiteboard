@@ -1,7 +1,7 @@
 function createWhiteboard(containerElement) {
 
   var containerZ,
-      containerWidth, containerHeight;
+      prevContainerWidth, prevContainerHeight;
 
   var socket;
 
@@ -23,11 +23,12 @@ function createWhiteboard(containerElement) {
       FX_LAYER_RELATIVE_Z = 1;  // middle layer
 
 
-  init();
+  main();
 
 
-  function init() {
-    initContainerDimensions();
+  function main() {
+    containerZ = getZIndex(containerElement);
+    recordContainerDimensions();
 
     initDrawLayer();
     initGFXLayer();
@@ -39,10 +40,9 @@ function createWhiteboard(containerElement) {
     initEventHandlers();
   }
 
-  function initContainerDimensions() {
-    containerZ = getZIndex(containerElement);
-    containerWidth = containerElement.offsetWidth;
-    containerHeight = containerElement.offsetHeight;
+  function recordContainerDimensions() {
+    prevContainerWidth = containerElement.offsetWidth;
+    prevContainerHeight = containerElement.offsetHeight;
   }
 
   ////////////////// events
@@ -60,7 +60,7 @@ function createWhiteboard(containerElement) {
     containerElement.addEventListener('keypress', handleKeypress, true);
 
     var RESIZE_HANDLING_RATE = 25; // 25fps resizing responsiveness
-    window.addEventListener('resize', createResizeHandler(RESIZE_HANDLING_RATE)); // createResizeHandler must be evaluated!
+    window.addEventListener('resize', createThrottledResizeHandler(RESIZE_HANDLING_RATE)); // createThrottledResizeHandler must be evaluated!
   }
 
   function handleTouch(e) {
@@ -133,7 +133,7 @@ function createWhiteboard(containerElement) {
   // wraps actual resize handling code inside closure that throttles rate of resize
   // events triggering and being handled.
   // @param targetRate: Number, target rate of resize event handling (per second)
-  function createResizeHandler(targetRate) {
+  function createThrottledResizeHandler(targetRate) {
     var resizeTimeout = null; // closure var to track and control resize rate
 
     return function() {
@@ -141,25 +141,28 @@ function createWhiteboard(containerElement) {
       resizeTimeout = setTimeout(
           function() {
             resizeTimeout = null;
-            resizeCanvases();
+            resizeHandler();
           },
           1000/targetRate
       );
     };
   }
 
-  function resizeCanvases() {
+  function resizeHandler() {
     var w = containerElement.offsetWidth;
     var h = containerElement.offsetHeight;
-    if (w === containerWidth && h === containerHeight) return;
+    if (w === prevContainerWidth && h === prevContainerHeight) return;
 
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
 
+    // resize draw canvas and reload image data from cache
     fitCanvasToContainer(drawCanvas);
     var cached = cacheCtx.getImageData(0, 0, w, h);
     drawCtx.putImageData(cached, 0, 0);
+
+    recordContainerDimensions();
   }
 
   //////////////////// coordinate trackers
@@ -225,39 +228,38 @@ function createWhiteboard(containerElement) {
 
   function initColorPicker() {
 
-    var svg = document.createElement('svg');
-    containerElement.appendChild(svg);
-    svg.height = '100px';
-    svg.width = '100px';
+    var posDiv = document.createElement('div');
+    posDiv.style.position = 'absolute';
+    posDiv.style.width = '100%';
+    posDiv.style.zIndex = containerZ + COLOR_PICKER_RELATIVE_Z;
+    containerElement.appendChild(posDiv);
+
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('height', '100px');
+    svg.setAttribute('width', '100px');
     svg.style.display = 'block';
     svg.style.margin = '0 auto';
+    posDiv.appendChild(svg);
 
-    svg.style.position = 'absolute';
-    svg.style.zIndex = containerZ + COLOR_PICKER_RELATIVE_Z;
-
-    var picker = document.createElement('circle');
-    svg.appendChild(picker);
+    var picker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     picker.setAttribute('cx', '50');
     picker.setAttribute('cy', '50');
     picker.setAttribute('r', '15');
     picker.style.fill = colorVal.toString(16);
-
+    svg.appendChild(picker);
 
     $(picker).spectrum({
       color: '#' + colorVal.toString(16),
       showButtons: false,
       change: function(newColor) {
         var colorHex = newColor.toHex();
-        picker.style.fill(colorHex);
+        picker.style.fill = '#' + colorHex;
         colorVal = parseInt(colorHex, 16);
         particleOpts.color = colorVal;
-        colorVal = colorVal;
       },
       hide: function(color) {
-        agents[localDrawingAgent].stopConfiguring();
       },
       show: function(color) {
-        agents[localDrawingAgent].startConfiguring();
       }
     });
   }
@@ -437,8 +439,7 @@ function createWhiteboard(containerElement) {
   }
 
 }
-//
-//WRITE TO CACHE
-//CACHE RESIZE
-//CACHE LOAD ON RESIZE
-//COLOR PICKER
+/*
+CAPTURE CLICKS PROPERLY ON COLOR PICKER WITHOUT AFFECTING CANVAS
+CLEAR FUNCTION
+ */

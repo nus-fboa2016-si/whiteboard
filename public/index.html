@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
   <style>
     body {
-      background-color: #555555;
+      background-color: #222222;
       margin: 0px;
       overflow: hidden;
     }
@@ -29,19 +29,14 @@
 </head>
 
 <body>
-
-  <!--<div style="position:absolute; width:100%;">-->
-    <!--<svg height="100" width="100" style="display: block;margin: 0 auto;">-->
-      <!--<circle id="color-picker" cx="50" cy="50" r="15" />-->
-    <!--</svg>-->
-  <!--</div>-->
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
   <script src="./js/three.min.js"></script>
   <script src="./js/GPUParticleSystem.js"></script>
-  <div id="whiteboard"> </div>
+  <div id="whiteboard">
+  </div>
   <script src="./js/whiteboard2.js"></script>
   <script>
     createWhiteboard(document.getElementById('whiteboard'));
