@@ -1,11 +1,12 @@
 function createWhiteboard(containerElement) {
 
+  var containerZ;
+
   var socket;
 
   var drawCanvasElement, drawContext,
       colorVal, size, // colorVal is a number
-      prevX, prevY,
-      newX, newY,
+      mousePosTracker,       // relative to container
       isDrawing,
       DRAW_LAYER_RELATIVE_Z = 0,   // bottom layer
       COLOR_PICKER_RELATIVE_Z = 2; // top layer
@@ -14,10 +15,9 @@ function createWhiteboard(containerElement) {
       clock, tick,
       particleSystem,
       particleOpts,
+      spawnPosTracker,
       spawnerOpts,
       FX_LAYER_RELATIVE_Z = 1;  // middle layer
-
-  var containerZ;
 
 
   init();
@@ -25,15 +25,141 @@ function createWhiteboard(containerElement) {
 
   function init() {
     containerZ = getZIndex(containerElement);
-    initBoard();
-    initGraphics();
-    initSocket();
+    initDrawLayer();
+    initGFXLayer();
+    initPosTrackers();
     animate();
+    initSocket();
+    initEventHandlers();
+    //window.ps = particleSystem;
+  }
+
+  ////////////////// events
+
+  function initPosTrackers() {
+    mousePosTracker = {};
+    spawnPosTracker = {};
+    resetPosTrackers();
+  }
+
+  function initEventHandlers() {
+    containerElement.addEventListener('mousedown', handleMousePress);
+    containerElement.addEventListener('mousemove', handleMouseMove);
+    containerElement.addEventListener('mouseup', handleMouseRelease);
+
+    containerElement.addEventListener('touchstart', handleTouch, true);
+    containerElement.addEventListener('touchmove', handleTouch, true);
+    containerElement.addEventListener('touchend', handleTouch, true);
+    containerElement.addEventListener('touchcancel', handleTouch, true);
+
+    containerElement.addEventListener('keypress', handleKeypress, true);
+
+    window.addEventListener('resize', handleResize, true);
+  }
+
+  function handleTouch(e) {
+    var touches = e.changedTouches,
+        first = touches[0],
+        type = "";
+    switch (e.type) {
+      case "touchstart":
+        type = "mousedown";
+        break;
+      case "touchmove":
+        type = "mousemove";
+        break;
+      case "touchend":
+        type = "mouseup";
+        break;
+      default:
+        return;
+    }
+    var simulatedMouseEvent = document.createEvent('MouseEvent');
+    simulatedMouseEvent.initMouseEvent(type, true, true, window, 1,
+        first.screenX, first.screenY,
+        first.clientX, first.clientY, false,
+        false, false, false, 0 /*left*/ , null);
+
+    first.target.dispatchEvent(simulatedEvent);
+    event.preventDefault();
+  }
+
+  function handleKeypress(e) {
+    var key = e.which || e.keyCode;
+    if (key === 99) {
+      // "c" pressed
+      clearScreen();
+    }
+  }
+
+  function handleResize(e) {
+    
+  }
+
+  function handleMousePress(e) {
+    var x = e.offsetX || e.pageX - drawCanvasElement.offsetLeft;
+    var y = e.offsetY || e.pageY - drawCanvasElement.offsetTop;
+    updatePosTrackers(x,y);
+    isDrawing = true;
+  }
+
+  function handleMouseRelease(e) {
+    isDrawing = false;
+    resetPosTrackers();
+  }
+
+  function handleMouseMove(e) {
+    if (!isDrawing) return;
+
+    var x = e.offsetX || e.pageX - containerElement.offsetLeft;
+    var y = e.offsetY || e.pageY - containerElement.offsetTop;
+    console.log(x + ' ' + y);
+    updatePosTrackers(x, y);
+    
+    var newLine = {
+      startX: mousePosTracker.prevX,
+      startY: mousePosTracker.prevY,
+      endX: mousePosTracker.newX,
+      endY: mousePosTracker.newY,
+      width: size,
+      color: "#" + colorVal.toString(16)
+    };
+
+    drawLine(newLine);
+    socket.emit('draw line', newLine);
+  }
+
+  function updatePosTrackers(offsetX, offsetY) {
+    updateTracker(mousePosTracker, offsetX, offsetY);
+    var newSpawnPos = getWorldPosFromCameraPos(offsetX, offsetY);
+    updateTracker(spawnPosTracker, newSpawnPos.x, newSpawnPos.y);
+  }
+
+  function resetPosTrackers() {
+    var m = mousePosTracker;
+    var s = spawnPosTracker;
+    m.newX = 
+      m.newY =
+        m.prevX =
+          m.prevY =
+            null;
+    s.newX =
+      s.newY =
+        s.prevX =
+          s.prevY =
+            null;
+  }
+
+  function updateTracker(tracker, x, y) {
+    tracker.prevX = tracker.newX === null ? x : tracker.newX;
+    tracker.prevY = tracker.newY === null ? y : tracker.newY;
+    tracker.newX = x;
+    tracker.newY = y;
   }
 
   //////////////////// draw canvas
 
-  function initBoard() {
+  function initDrawLayer() {
     drawCanvasElement = document.createElement('canvas');
     containerElement.appendChild(drawCanvasElement);
     fitCanvasToParent(drawCanvasElement);
@@ -47,12 +173,9 @@ function createWhiteboard(containerElement) {
 
     colorVal = 0xffffff;
     size = 1;
-    prevX = null;
-    prevY = null;
     isDrawing = false;
 
     initColorPicker();
-    initEventListeners();
   }
 
   function initColorPicker() {
@@ -94,87 +217,6 @@ function createWhiteboard(containerElement) {
     });
   }
 
-  function initEventListeners() {
-    containerElement.addEventListener('mousedown', handleMousePress);
-    containerElement.addEventListener('mousemove', handleMouseMove);
-    containerElement.addEventListener('mouseup', handleMouseRelease);
-
-    containerElement.addEventListener('touchstart', handleTouch, true);
-    containerElement.addEventListener('touchmove', handleTouch, true);
-    containerElement.addEventListener('touchend', handleTouch, true);
-    containerElement.addEventListener('touchcancel', handleTouch, true);
-
-    containerElement.addEventListener('keypress', handleKeypress, true);
-
-    function handleMousePress() {
-      isDrawing = true;
-    }
-
-    function handleMouseRelease() {
-      isDrawing = false;
-      prevX = null;
-      prevY = null;
-      newX = null;
-      newY = null;
-    }
-
-    function handleMouseMove(e) {
-      if (isDrawing) {
-        var x = e.clientX;//e.offsetX || e.pageX - drawCanvasElement.offsetLeft;
-        var y = e.clientY;//e.offsetY || e.pageY - drawCanvasElement.offsetTop;
-        newX = x;
-        newY = y;
-        var newLine = {
-          startX: prevX === null ? x : prevX,
-          startY: prevY === null ? y : prevY,
-          endX: x,
-          endY: y,
-          width: size,
-          color: "#" + colorVal.toString(16)
-        };
-        drawLine(newLine);
-        socket.emit('draw line', newLine);
-        updatePrevMousePos(x, y);
-      }
-    }
-
-    function handleTouch(e) {
-      var touches = e.changedTouches,
-          first = touches[0],
-          type = "";
-      switch (e.type) {
-        case "touchstart":
-          type = "mousedown";
-          break;
-        case "touchmove":
-          type = "mousemove";
-          break;
-        case "touchend":
-          type = "mouseup";
-          break;
-        default:
-          return;
-      }
-      var simulatedMouseEvent = document.createEvent('MouseEvent');
-      simulatedMouseEvent.initMouseEvent(type, true, true, window, 1,
-          first.screenX, first.screenY,
-          first.clientX, first.clientY, false,
-          false, false, false, 0 /*left*/ , null);
-
-      first.target.dispatchEvent(simulatedEvent);
-      event.preventDefault();
-    }
-
-    function handleKeypress(event) {
-      var key = event.which || event.keyCode;
-      if (key === 99) {
-        // "c" pressed
-        clearScreen();
-      }
-    }
-
-  }
-
   function drawLine(line) {
     var ctx = drawContext;
     ctx.strokeStyle = line.color;
@@ -185,18 +227,13 @@ function createWhiteboard(containerElement) {
     ctx.stroke();
   }
 
-  function updatePrevMousePos(x, y) {
-    prevX = x;
-    prevY = y;
-  }
-
   function clearScreen() {
   //TODO
   }
 
   ////////////////// 3d effects
 
-  function initGraphics() {
+  function initGFXLayer() {
 
     tick = 0;
     clock = new THREE.Clock(true);
@@ -228,6 +265,12 @@ function createWhiteboard(containerElement) {
     renderer.domElement.style.zIndex = containerZ + FX_LAYER_RELATIVE_Z;
     renderer.domElement.style.position = 'absolute';
 
+    spawnPosTracker = {
+      prevX: null,
+      newX: null,
+      prevY: null,
+      newY: null
+    };
     particleOpts = {
       position: new THREE.Vector3(),
       positionRandomness: .3,
@@ -235,13 +278,13 @@ function createWhiteboard(containerElement) {
       velocityRandomness: .5,
       color: colorVal,
       colorRandomness: .2,
-      turbulence: 0.1,
-      lifetime: 0.4,
-      size: 10,
+      turbulence: 0.4,
+      lifetime: 1.5,
+      size: 20,
       sizeRandomness: 1
     };
     spawnerOpts = {
-      spawnRate: 3000,
+      spawnRate: 1500,
       horizontalSpeed: 0,
       verticalSpeed: 0,
       timeScale: 1
@@ -255,20 +298,40 @@ function createWhiteboard(containerElement) {
     var delta = clock.getDelta() * spawnerOpts.timeScale;
     tick += delta;
 
-    if (tick < 0) tick = 0;
     if (isDrawing && delta > 0) {
       var maxSpawn = spawnerOpts.spawnRate * delta;
       for (var i = 0; i < maxSpawn; i++) {
         var percent = i / maxSpawn;
-        particleOpts.position.x = prevX * (1 - percent) + newX * percent;
-        particleOpts.position.y = prevY * (1 - percent) + newY * percent;
+        particleOpts.position.x = spawnPosTracker.prevX*(1 - percent) + spawnPosTracker.newX*percent;
+        particleOpts.position.y = spawnPosTracker.prevY*(1 - percent) + spawnPosTracker.newY*percent;
         particleSystem.spawnParticle(particleOpts);
       }
     }
+
+    if (tick < 0) tick = 0;
     particleSystem.update(tick);
     renderer.render(scene, camera);
   }
 
+  function getWorldPosFromCameraPos(x, y) {
+    var vector = new THREE.Vector3();
+    vector.set(
+        (x / window.innerWidth) * 2 - 1,
+        -(y / window.innerHeight) * 2 + 1,
+        0.5
+    );
+
+    vector.unproject(camera);
+
+    var dir = vector.sub(camera.position).normalize();
+    var distance = -camera.position.z / dir.z;
+    var pos = camera.position.clone().add(dir.multiplyScalar(distance));
+    return {
+      x: pos.x,
+      y: pos.y,
+      z: pos.z
+    }
+  }
 
   ////////////////// network
 
@@ -292,4 +355,22 @@ function createWhiteboard(containerElement) {
     }
     return z;
   }
+
 }
+function part(x, y) {
+for (var i = 0; i < 500; i++) {
+  var pos = new THREE.Vector3();
+  pos.x = x;
+  pos.y = y;
+ps.spawnParticle({
+  position: pos,
+  positionRandomness: .3,
+  velocity: new THREE.Vector3(),
+  velocityRandomness: .5,
+  color: 0x999999,
+  colorRandomness: .2,
+  turbulence: 0.1,
+  lifetime: 5,
+  size: 10,
+  sizeRandomness: 1
+});}}
