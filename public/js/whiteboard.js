@@ -488,6 +488,7 @@ function createWhiteboard(containerElement) {
 
   function getZIndex(element) {
     var z = window.document.defaultView.getComputedStyle(element).getPropertyValue('z-index');
+    if (element.nodeName == 'BODY') return 0;
     if (isNaN(z)) {
       return getZIndex(element.parentNode);
     }
