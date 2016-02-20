@@ -23,22 +23,15 @@ function createWhiteboard(containerElement) {
       FX_LAYER_RELATIVE_Z = 1;  // middle layer
 
 
-  main();
-
-
-  function main() {
-    containerZ = getZIndex(containerElement);
-    recordContainerDimensions();
-
-    initDrawLayer();
-    initGFXLayer();
-
-    initPosTrackers();
-    animate();
-
-    initSocket();
-    initEventHandlers();
-  }
+  containerZ = getZIndex(containerElement);
+  recordContainerDimensions();
+  initDrawLayer();
+  initGFXLayer();
+  initOverlay();
+  initPosTrackers();
+  animate();
+  initSocket();
+  initEventHandlers();
 
   function recordContainerDimensions() {
     prevContainerWidth = containerElement.offsetWidth;
@@ -48,9 +41,9 @@ function createWhiteboard(containerElement) {
   ////////////////// events
 
   function initEventHandlers() {
-    containerElement.addEventListener('mousedown', handleMousePress);
-    containerElement.addEventListener('mousemove', handleMouseMove);
-    containerElement.addEventListener('mouseup', handleMouseRelease);
+    containerElement.addEventListener('mousedown', handleMousePress, true);
+    containerElement.addEventListener('mousemove', handleMouseMove, true);
+    containerElement.addEventListener('mouseup', handleMouseRelease, true);
 
     containerElement.addEventListener('touchstart', handleTouch, true);
     containerElement.addEventListener('touchmove', handleTouch, true);
@@ -59,8 +52,8 @@ function createWhiteboard(containerElement) {
 
     containerElement.addEventListener('keypress', handleKeypress, true);
 
-    var RESIZE_HANDLING_RATE = 25; // 25fps resizing responsiveness
-    window.addEventListener('resize', createThrottledResizeHandler(RESIZE_HANDLING_RATE)); // createThrottledResizeHandler must be evaluated!
+    var RESIZE_HANDLING_RATE = 4; // 4fps resizing responsiveness
+    window.addEventListener('resize', createThrottledResizeHandler(RESIZE_HANDLING_RATE));
   }
 
   function handleTouch(e) {
@@ -99,13 +92,15 @@ function createWhiteboard(containerElement) {
   }
 
   function handleMousePress(e) {
-    var x = e.offsetX || e.pageX - drawCanvas.offsetLeft;
-    var y = e.offsetY || e.pageY - drawCanvas.offsetTop;
+    var targetPagePos = getPosition(e.target);
+    var containerPagePos = getPosition(containerElement);
+    var x = e.offsetX + targetPagePos.x - containerPagePos.x;
+    var y = e.offsetY + targetPagePos.y - containerPagePos.y;
     updatePosTrackers(x,y);
     isDrawing = true;
   }
 
-  function handleMouseRelease(e) {
+  function handleMouseRelease() {
     isDrawing = false;
     resetPosTrackers();
   }
@@ -113,8 +108,10 @@ function createWhiteboard(containerElement) {
   function handleMouseMove(e) {
     if (!isDrawing) return;
 
-    var x = e.offsetX || e.pageX - containerElement.offsetLeft;
-    var y = e.offsetY || e.pageY - containerElement.offsetTop;
+    var targetPagePos = getPosition(e.target);
+    var containerPagePos = getPosition(containerElement);
+    var x = e.offsetX + targetPagePos.x - containerPagePos.x;
+    var y = e.offsetY + targetPagePos.y - containerPagePos.y;
     updatePosTrackers(x, y);
     
     var newLine = {
@@ -201,10 +198,65 @@ function createWhiteboard(containerElement) {
     tracker.newY = y;
   }
 
+  //////////////////// overlay (color picker, connection count etc)
+
+  function initOverlay() {
+    initColorPicker();
+  }
+
+  function initColorPicker() {
+
+    colorVal = 0xffffff;
+    
+    var pickerPosDiv= document.createElement('div');
+    pickerPosDiv.style.position = 'absolute';
+    pickerPosDiv.style.width = '100%';
+    containerElement.appendChild(pickerPosDiv);
+
+    var pickerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    pickerSvg.id = 'wb-color-picker-svg';
+    pickerSvg.setAttribute('height', '30');
+    pickerSvg.setAttribute('width', '30');
+    pickerSvg.style.display = 'block';
+    pickerSvg.style.marginLeft = 'auto';
+    pickerSvg.style.marginRight = 'auto';
+    pickerSvg.style.marginTop = '35';
+    pickerSvg.style.position = 'relative';
+    pickerSvg.style.zIndex = containerZ + COLOR_PICKER_RELATIVE_Z;
+    pickerPosDiv.appendChild(pickerSvg);
+
+    var pickerShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    pickerShape.id = 'wb-color-picker-shape';
+    pickerShape.setAttribute('cx', '15');
+    pickerShape.setAttribute('cy', '15');
+    pickerShape.setAttribute('r', '15');
+    pickerShape.style.fill = colorVal.toString(16);
+    pickerSvg.appendChild(pickerShape);
+
+    $(pickerShape).spectrum({
+      color: '#' + colorVal.toString(16),
+      showButtons: false,
+      change: function(newColor) {
+        var colorHex = newColor.toHex();
+        pickerShape.style.fill = '#' + colorHex;
+        colorVal = parseInt(colorHex, 16);
+        particleOpts.color = colorVal;
+      },
+      hide: function(color) {
+      },
+      show: function(color) {
+      }
+    });
+
+    var hoverRule = '#' + pickerShape.id + ':hover{cursor:pointer;}';
+    addRuleCSS(hoverRule);
+  }
+
   //////////////////// draw canvas
 
   function initDrawLayer() {
     drawCanvas = document.createElement('canvas');
+    drawCanvas.id = 'wb-draw-layer-canvas';
     containerElement.appendChild(drawCanvas);
     fitCanvasToContainer(drawCanvas);
 
@@ -222,46 +274,6 @@ function createWhiteboard(containerElement) {
     cacheCanvas = document.createElement('canvas'); // this is not in DOM body
     fitCanvasToContainer(cacheCanvas);
     cacheCtx = cacheCanvas.getContext('2d');
-
-    initColorPicker();
-  }
-
-  function initColorPicker() {
-
-    var posDiv = document.createElement('div');
-    posDiv.style.position = 'absolute';
-    posDiv.style.width = '100%';
-    posDiv.style.zIndex = containerZ + COLOR_PICKER_RELATIVE_Z;
-    containerElement.appendChild(posDiv);
-
-    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('height', '100px');
-    svg.setAttribute('width', '100px');
-    svg.style.display = 'block';
-    svg.style.margin = '0 auto';
-    posDiv.appendChild(svg);
-
-    var picker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    picker.setAttribute('cx', '50');
-    picker.setAttribute('cy', '50');
-    picker.setAttribute('r', '15');
-    picker.style.fill = colorVal.toString(16);
-    svg.appendChild(picker);
-
-    $(picker).spectrum({
-      color: '#' + colorVal.toString(16),
-      showButtons: false,
-      change: function(newColor) {
-        var colorHex = newColor.toHex();
-        picker.style.fill = '#' + colorHex;
-        colorVal = parseInt(colorHex, 16);
-        particleOpts.color = colorVal;
-      },
-      hide: function(color) {
-      },
-      show: function(color) {
-      }
-    });
   }
 
   function drawLine(line) {
@@ -310,7 +322,7 @@ function createWhiteboard(containerElement) {
   }
 
   function clearScreen() {
-  //TODO
+    fitCanvasToContainer(cacheCanvas);
   }
 
   ////////////////// 3d effects
@@ -343,6 +355,7 @@ function createWhiteboard(containerElement) {
 
     containerElement.appendChild(renderer.domElement);
     fitCanvasToContainer(renderer.domElement);
+    renderer.domElement.id = 'wb-gfx-layer-canvas';
 
     renderer.domElement.style.zIndex = containerZ + FX_LAYER_RELATIVE_Z;
     renderer.domElement.style.position = 'absolute';
@@ -438,8 +451,21 @@ function createWhiteboard(containerElement) {
     return z;
   }
 
+  function getPosition(element) {
+    var clientRect = element.getBoundingClientRect();
+    return {
+      x: clientRect.left + window.scrollX,
+      y: clientRect.top + window.scrollY
+    };
+  }
+
+  function addRuleCSS(ruleText) {
+    var styleElem = document.createElement('style');
+    if (styleElem.styleSheet) {
+      styleElem.styleSheet.cssText = ruleText;
+    } else {
+      styleElem.appendChild(document.createTextNode(ruleText));
+    }
+    document.getElementsByTagName('head')[0].appendChild(styleElem);
+  }
 }
-/*
-CAPTURE CLICKS PROPERLY ON COLOR PICKER WITHOUT AFFECTING CANVAS
-CLEAR FUNCTION
- */
