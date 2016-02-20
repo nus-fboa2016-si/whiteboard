@@ -24,6 +24,8 @@ function createWhiteboard(containerElement) {
       pickerShape,
       uCountSVGText;
 
+  var DEFAULT_COLOR = 0xaa88ff; // alternatively, 0xffffff
+
   /////////////////// end shared var declarations
 
   socket = io(); // WAOW! AMAZING!
@@ -218,7 +220,7 @@ function createWhiteboard(containerElement) {
 
   function initColorPicker() {
     var s;
-    colorVal = 0xffffff;
+    colorVal = DEFAULT_COLOR;
     
     var pickerPosDiv= document.createElement('div');
     containerElement.appendChild(pickerPosDiv);
@@ -288,12 +290,9 @@ function createWhiteboard(containerElement) {
     uCountSVGText.setAttribute('y', '30');
     s = uCountSVGText.style;
     s.textAnchor = 'start';
-    s.fill = '#eeeeee';
-    s.stroke = '#050505';
-    s.strokeWidth = '2px';
-    s.fontSize = '30px';
-    s.fontFamily = 'Verdana';
-    s.fontWeight = 'bold';
+    s.fill = '#00D5B0';
+    s.fontSize = '24px';
+    s.fontFamily = 'sans-serif';
     uCountSVG.appendChild(uCountSVGText);
 
     socket.on('user count', updateUserCount);
@@ -301,7 +300,7 @@ function createWhiteboard(containerElement) {
   }
 
   function updateUserCount(newCount) {
-    uCountSVGText.textContent = 'Online: ' + newCount;
+    uCountSVGText.textContent = 'CONNECTED: ' + newCount;
   }
 
   //////////////////// draw canvas
@@ -319,7 +318,7 @@ function createWhiteboard(containerElement) {
     drawCtx.lineCap = 'round';
     drawCtx.lineJoin = 'round';
 
-    colorVal = 0xffffff;
+    colorVal = DEFAULT_COLOR;
     size = 1;
     isDrawing = false;
 
