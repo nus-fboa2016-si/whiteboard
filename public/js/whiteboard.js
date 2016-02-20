@@ -234,11 +234,11 @@ function createWhiteboard(containerElement) {
     //pickerSvg.setAttribute('width', '30');
     pickerPosDiv.appendChild(pickerSvg);
     s = pickerSvg.style;
-    s.height = '30';
-    s.width = '30';
+    s.height = '30px';
+    s.width = '30px';
     s.display = 'block';
     s.margin = '0 auto';
-    s.top = '35';
+    s.top = '35px';
     s.position = 'relative';
     s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
 
@@ -278,8 +278,8 @@ function createWhiteboard(containerElement) {
     s.width = '100%';
     s.height = '30px';
     s.position = 'absolute';
-    s.left = '10';
-    s.bottom = '10';
+    s.left = '10px';
+    s.bottom = '10px';
     s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
     containerElement.appendChild(uCountSVG);
 
