@@ -89,7 +89,7 @@ function createWhiteboard(containerElement) {
         first.clientX, first.clientY, false,
         false, false, false, 0 /*left*/ , null);
 
-    first.target.dispatchEvent(simulatedEvent);
+    first.target.dispatchEvent(simulatedMouseEvent);
     event.preventDefault();
   }
 
