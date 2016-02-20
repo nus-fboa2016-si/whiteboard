@@ -227,7 +227,7 @@ function createWhiteboard(containerElement) {
     s.width = '100%';
 
     var pickerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    pickerSvg.id = 'wb-color-picker-svg';
+    pickerSvg.id = 'wb-overlay-color-picker-svg';
     //pickerSvg.setAttribute('height', '30');
     //pickerSvg.setAttribute('width', '30');
     pickerPosDiv.appendChild(pickerSvg);
@@ -241,7 +241,7 @@ function createWhiteboard(containerElement) {
     s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
 
     pickerShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    pickerShape.id = 'wb-color-picker-shape';
+    pickerShape.id = 'wb-overlay-color-picker-shape';
     pickerShape.setAttribute('cx', '15');
     pickerShape.setAttribute('cy', '15');
     pickerShape.setAttribute('r', '15');
@@ -271,7 +271,7 @@ function createWhiteboard(containerElement) {
     var s;
 
     var uCountSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    uCountSVG.id = 'wb-usercount-svg';
+    uCountSVG.id = 'wb-overlay-usercount-svg';
     s = uCountSVG.style;
     s.width = '100%';
     s.height = '30px';
@@ -282,7 +282,7 @@ function createWhiteboard(containerElement) {
     containerElement.appendChild(uCountSVG);
 
     uCountSVGText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    uCountSVGText.id = 'wb-usercount-text';
+    uCountSVGText.id = 'wb-overlay-usercount-text';
     uCountSVGText.textContent = 'Loading user count...';
     uCountSVGText.setAttribute('x', '0');
     uCountSVGText.setAttribute('y', '30');
