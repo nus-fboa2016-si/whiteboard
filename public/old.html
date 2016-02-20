@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>socket.io whiteboard example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    body {
+      background-color: #000000;
+      margin: 0px;
+      overflow: hidden;
+    }
+
+    a {
+      color: #0078ff;
+    }
+
+    .dg {
+      right: auto!important;
+      left: 20px!important;
+    }
+
+    #circle:hover {
+      cursor: pointer;
+    }
+    .count {
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      color: #00D5B0;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+<!--   <div style="position: absolute; top: 10px; width: 100%; text-align: center; color:#eee">
+  <a href="http://threejs.org" target="_blank">three.js</a> - GPU particle system plugin by <a href="http://charliehoey.com">Charlie Hoey</a>.</div> -->
+<div style="position:absolute; width:100%;">
+  <svg height="100" width="100" style="display: block;margin: 0 auto;">
+    <circle id="circle" cx="50" cy="50" r="15" fill="#aa88ff" />
+  </svg>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
+<script src="./js/three.min.js"></script>
+<script src="./js/GPUParticleSystem.js" charset="utf-8"></script>
+<script src="./js/connection.js"></script>
+<script src="./js/whiteboardOld.js"></script>
+</body>
+
+</html>

@@ -1,370 +1,515 @@
-var socket = io();
+function createWhiteboard(containerElement) {
 
-var camera, tick = 0,
-    scene, renderer, clock = new THREE.Clock(true),
-    container,
-    options, spawnerOptions, particleSystem;
+  var containerZ,
+      prevContainerWidth, prevContainerHeight;
 
-var defaultColor = currentColor = "#aa88ff";
-var currentColorHex = 0xaa88ff;
+  var socket;
 
-var localDrawingAgent = "local";
-var agents = {};
+  var mousePosTracker,  // relative to container
+      spawnPosTracker;  // unprojected 3d world coordinates
+
+  var DRAW_LAYER_RELATIVE_Z = 0,  // bottom layer
+      drawCanvas, drawCtx,
+      colorVal, size,             // colorVal is a number
+      cacheCanvas, cacheCtx,      // hidden, used to redraw canvas on resize
+      isDrawing;
+
+  var GFX_LAYER_RELATIVE_Z = 1,   // middle layer
+      camera, scene, renderer,
+      clock, tick,
+      particleSystem,
+      particleOpts, spawnerOpts;
+
+  var OVERLAY_RELATIVE_Z = 2,     // top layer
+      pickerShape,
+      uCountSVGText;
+
+  /////////////////// end shared var declarations
+
+  socket = io(); // WAOW! AMAZING!
+
+  recordContainerDimensions();
+  initPosTrackers();
+
+  initDrawLayer();
+  initGFXLayer();
+  initOverlay();
+
+  animate();
+  initEventHandlers();
 
 
-function DrawingAgent(name, color) {
-  this.name = name;
-  this.color = color;
-  this.mousePos = [];
-  this.isDrawing = false;
-  this.isConfiguring = false;
+  function recordContainerDimensions() {
+    containerZ = getZIndex(containerElement);
+    prevContainerWidth = containerElement.offsetWidth;
+    prevContainerHeight = containerElement.offsetHeight;
+  }
 
-  this.updatePos = function(newX, newY) {
-    newX = Math.round(newX * 100) / 100;
-    newY = Math.round(newY * 100) / 100;
-    if (this.mousePos.length === 0) {
-      // this.mousePos = {
-      //   x: newX,
-      //   y: newY,
-      //   ex_x: newX,
-      //   ex_y: newY
-      // }
-      this.mousePos.push([newX, newY]);
-      this.mousePos.push([newX, newY]);
-    } else {
-      this.mousePos.push([newX, newY]);
-      // this.mousePos.ex_x = this.mousePos.x;
-      // this.mousePos.ex_y = this.mousePos.y;
-      // this.mousePos.x = newX;
-      // this.mousePos.y = newY;
+  ////////////////// events
+
+  function initEventHandlers() {
+    containerElement.addEventListener('mousedown', handleMousePress, true);
+    containerElement.addEventListener('mousemove', handleMouseMove, true);
+    containerElement.addEventListener('mouseup', handleMouseRelease, true);
+
+    containerElement.addEventListener('touchstart', handleTouch, true);
+    containerElement.addEventListener('touchmove', handleTouch, true);
+    containerElement.addEventListener('touchend', handleTouch, true);
+    containerElement.addEventListener('touchcancel', handleTouch, true);
+
+    //TODO make it only work when whiteboard container is active
+    document.addEventListener('keypress', handleKeypress, true);
+
+    var RESIZE_HANDLING_RATE = 4; // 4fps resizing responsiveness
+    window.addEventListener('resize', createThrottledResizeHandler(RESIZE_HANDLING_RATE));
+  }
+
+  function handleTouch(e) {
+    var touches = e.changedTouches,
+        first = touches[0],
+        type = "";
+    switch (e.type) {
+      case "touchstart":
+        type = "mousedown";
+        break;
+      case "touchmove":
+        type = "mousemove";
+        break;
+      case "touchend":
+        type = "mouseup";
+        break;
+      default:
+        return;
     }
-  };
+    var simulatedMouseEvent = document.createEvent('MouseEvent');
+    simulatedMouseEvent.initMouseEvent(type, true, true, window, 1,
+        first.screenX, first.screenY,
+        first.clientX, first.clientY, false,
+        false, false, false, 0 /*left*/ , null);
 
-  this.startDrawing = function() {
-    this.isDrawing = true;
-  };
-
-  this.stopDrawing = function() {
-    this.isDrawing = false;
-
-    // clear previous mouse positions
-    this.mousePos = [];
+    first.target.dispatchEvent(simulatedEvent);
+    event.preventDefault();
   }
 
-  this.startConfiguring = function() {
-    this.isConfiguring = true;
-  };
-
-  this.stopConfiguring = function() {
-    this.isConfiguring = false;
+  function handleKeypress(e) {
+    var key = e.which || e.keyCode;
+    if (key === 99) {
+      // "c" pressed
+      clearScreen();
+    }
   }
 
-}
-
-agents[localDrawingAgent] = new DrawingAgent(localDrawingAgent, currentColorHex);
-
-$("#circle").spectrum({
-  color: defaultColor,
-  showButtons: false,
-  change: function(color) {
-    currentColor = color.toHexString(); // #ff0000
-    $("#circle").attr("fill", currentColor);
-    currentColorHex = parseInt(currentColor.replace(/^#/, ''), 16);
-    options.color = currentColorHex;
-    agents[localDrawingAgent].color = currentColorHex;
-  },
-  hide: function(color) {
-    console.log("hide");
-    agents[localDrawingAgent].stopConfiguring();
-  },
-  show: function(color) {
-    console.log("show");
-    agents[localDrawingAgent].startConfiguring();
-  }
-});
-
-function handleMouseUp(event) {
-  agents[localDrawingAgent].stopDrawing();
-}
-
-function handleMouseDown(event) {
-  agents[localDrawingAgent].startDrawing();
-}
-
-function handleMouseMove(event) {
-  var dot, eventDoc, doc, body, pageX, pageY;
-
-  event = event || window.event; // IE-ism
-
-  // If pageX/Y aren't available and clientX/Y are,
-  // calculate pageX/Y - logic taken from jQuery.
-  // (This is to support old IE)
-  if (event.pageX == null && event.clientX != null) {
-    eventDoc = (event.target && event.target.ownerDocument) || document;
-    doc = eventDoc.documentElement;
-    body = eventDoc.body;
-
-    event.pageX = event.clientX +
-      (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
-      (doc && doc.clientLeft || body && body.clientLeft || 0);
-    event.pageY = event.clientY +
-      (doc && doc.scrollTop || body && body.scrollTop || 0) -
-      (doc && doc.clientTop || body && body.clientTop || 0);
+  function handleMousePress(e) {
+    e.preventDefault();
+    var targetPagePos = getPagePosition(e.target);
+    var containerPagePos = getPagePosition(containerElement);
+    var x = e.offsetX + targetPagePos.x - containerPagePos.x;
+    var y = e.offsetY + targetPagePos.y - containerPagePos.y;
+    updatePosTrackers(x,y);
+    isDrawing = true;
   }
 
-  // Use event.pageX / event.pageY here
-  var vector = new THREE.Vector3();
-
-  vector.set(
-    (event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1,
-    0.5
-  );
-
-  vector.unproject(camera);
-
-  var dir = vector.sub(camera.position).normalize();
-
-  var distance = -camera.position.z / dir.z;
-
-  var pos = camera.position.clone().add(dir.multiplyScalar(distance));
-
-  if (agents[localDrawingAgent].isDrawing) {
-    agents[localDrawingAgent].updatePos(pos.x, pos.y);
-  }
-}
-
-// Map touch events to mouse events
-function touchHandler(event) {
-  var touches = event.changedTouches,
-      first = touches[0],
-      type = "";
-  switch (event.type) {
-    case "touchstart":
-      type = "mousedown";
-      break;
-    case "touchmove":
-      type = "mousemove";
-      break;
-    case "touchend":
-      type = "mouseup";
-      break;
-    default:
-      return;
+  function handleMouseRelease() {
+    isDrawing = false;
+    resetPosTrackers();
   }
 
-  // initMouseEvent(type, canBubble, cancelable, view, clickCount,
-  //                screenX, screenY, clientX, clientY, ctrlKey,
-  //                altKey, shiftKey, metaKey, button, relatedTarget);
+  function handleMouseMove(e) {
+    if (!isDrawing) return;
 
-  var simulatedEvent = document.createEvent("MouseEvent");
-  simulatedEvent.initMouseEvent(type, true, true, window, 1,
-      first.screenX, first.screenY,
-      first.clientX, first.clientY, false,
-      false, false, false, 0 /*left*/ , null);
+    var targetPagePos = getPagePosition(e.target);
+    var containerPagePos = getPagePosition(containerElement);
+    var x = e.offsetX + targetPagePos.x - containerPagePos.x;
+    var y = e.offsetY + targetPagePos.y - containerPagePos.y;
+    updatePosTrackers(x, y);
+    
+    var newLine = {
+      startX: mousePosTracker.prevX,
+      startY: mousePosTracker.prevY,
+      endX: mousePosTracker.newX,
+      endY: mousePosTracker.newY,
+      width: size,
+      color: "#" + colorVal.toString(16)
+    };
 
-  first.target.dispatchEvent(simulatedEvent);
-  event.preventDefault();
-}
-
-function keypressHandler(event) {
-  var key = event.which || event.keyCode;
-  if (key === 99) {
-    // "c" pressed
-    clearScreen();
+    drawLine(newLine);
+    socket.emit('draw line', newLine);
   }
-}
 
-function initEventListeners() {
-  document.onmousemove = handleMouseMove;
-  document.onmousedown = handleMouseDown;
-  document.onmouseup = handleMouseUp;
+  /*
+   wraps actual resize handling code inside closure and throttles rate of resize
+   events triggering and being handled.
+   @param targetRate: Number, target rate of resize event handling (per second)
+   */
+  function createThrottledResizeHandler(targetRate) {
+    var resizeTimeout = null; // closure var to track and control resize rate
 
-  document.addEventListener("touchstart", touchHandler, true);
-  document.addEventListener("touchmove", touchHandler, true);
-  document.addEventListener("touchend", touchHandler, true);
-  document.addEventListener("touchcancel", touchHandler, true);
+    return function() {
+      if (resizeTimeout != null) return; // resize control timer has not cooled down
+      resizeTimeout = setTimeout(
+          function() {
+            resizeTimeout = null;
+            resizeHandler();
+          },
+          1000/targetRate
+      );
+    };
+  }
 
-  document.addEventListener("keypress", keypressHandler, true);
-}
+  function resizeHandler() {
+    var w = containerElement.offsetWidth;
+    var h = containerElement.offsetHeight;
+    if (w === prevContainerWidth && h === prevContainerHeight) return;
 
-initEventListeners();
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
 
-init();
-animate();
-var msgcount = 0;
-socket.on("draw line", function() {
-  drawLine.apply(null, arguments);
-});
+    // resize draw canvas and reload image data from cache
+    fitCanvasToContainer(drawCanvas);
+    var cached = cacheCtx.getImageData(0, 0, w, h);
+    drawCtx.putImageData(cached, 0, 0);
 
-socket.on("user count", function(count) {
-  console.log(count);
-  updateCount(count);
-});
+    recordContainerDimensions();
+  }
 
-function init() {
-  initCount();
-  container = document.createElement('div');
-  document.body.appendChild(container);
+  //////////////////// coordinate trackers
 
-  camera = new THREE.PerspectiveCamera(28, window.innerWidth / window.innerHeight, 1, 10000);
-  camera.position.z = 100;
+  function initPosTrackers() {
+    mousePosTracker = {};
+    spawnPosTracker = {};
+    resetPosTrackers();
+  }
 
-  scene = new THREE.Scene();
+  function updatePosTrackers(offsetX, offsetY) {
+    updateTracker(mousePosTracker, offsetX, offsetY);
+    var newSpawnPos = getWorldPosFromCameraPos(offsetX, offsetY);
+    updateTracker(spawnPosTracker, newSpawnPos.x, newSpawnPos.y);
+  }
 
-  // The GPU Particle system extends THREE.Object3D, and so you can use it
-  // as you would any other scene graph component.  Particle positions will be
-  // relative to the position of the particle system, but you will probably only need one
-  // system for your whole scene
-  particleSystem = new THREE.GPUParticleSystem({
-    maxParticles: 250000
-  });
-  scene.add(particleSystem);
+  function resetPosTrackers() {
+    var m = mousePosTracker;
+    var s = spawnPosTracker;
+    m.newX =
+        m.newY =
+            m.prevX =
+                m.prevY =
+                    null;
+    s.newX =
+        s.newY =
+            s.prevX =
+                s.prevY =
+                    null;
+  }
 
+  function updateTracker(tracker, x, y) {
+    tracker.prevX = tracker.newX === null ? x : tracker.newX;
+    tracker.prevY = tracker.newY === null ? y : tracker.newY;
+    tracker.newX = x;
+    tracker.newY = y;
+  }
 
-  // options passed during each spawned
-  options = {
-    position: new THREE.Vector3(),
-    positionRandomness: .3,
-    // positionRandomness: 0,
-    velocity: new THREE.Vector3(),
-    // velocityRandomness: 0,
-    velocityRandomness: .5,
-    color: currentColorHex,
-    colorRandomness: .2,
-    turbulence: 0.1,
-    lifetime: 0.4,
-    // size: 5,
-    size: 10,
-    sizeRandomness: 1
-  };
+  //////////////////// overlay (color picker, connection count etc)
 
-  spawnerOptions = {
-    spawnRate: 3000,
-    horizontalSpeed: 0,
-    verticalSpeed: 0,
-    timeScale: 1
-  };
+  function initOverlay() {
+    initUserCount();
+    initColorPicker();
+  }
 
-  renderer = new THREE.WebGLRenderer({
-    antialias: true
-  });
-  //renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  container.appendChild(renderer.domElement);
+  function initColorPicker() {
+    var s;
+    colorVal = 0xffffff;
+    
+    var pickerPosDiv= document.createElement('div');
+    containerElement.appendChild(pickerPosDiv);
+    s = pickerPosDiv.style;
+    s.position = 'absolute';
+    s.width = '100%';
 
-  window.addEventListener('resize', onWindowResize, false);
+    var pickerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    pickerSvg.id = 'wb-color-picker-svg';
+    //pickerSvg.setAttribute('height', '30');
+    //pickerSvg.setAttribute('width', '30');
+    pickerPosDiv.appendChild(pickerSvg);
+    s = pickerSvg.style;
+    s.height = '30';
+    s.width = '30';
+    s.display = 'block';
+    s.margin = '0 auto';
+    s.top = '35';
+    s.position = 'relative';
+    s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
 
-}
+    pickerShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    pickerShape.id = 'wb-color-picker-shape';
+    pickerShape.setAttribute('cx', '15');
+    pickerShape.setAttribute('cy', '15');
+    pickerShape.setAttribute('r', '15');
+    pickerShape.setAttribute('fill', '#'+colorVal.toString(16));
+    pickerSvg.appendChild(pickerShape);
 
-function onWindowResize() {
+    $(pickerShape).spectrum({
+      color: '#' + colorVal.toString(16),
+      showButtons: false,
+      change: function(newColor) {
+        var colorHex = newColor.toHex();
+        pickerShape.setAttribute('fill', '#'+colorHex);
+        colorVal = parseInt(colorHex, 16);
+        particleOpts.color = colorVal;
+      },
+      hide: function(color) {
+      },
+      show: function(color) {
+      }
+    });
 
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+    var hoverRule = '#' + pickerShape.id + ':hover{cursor:pointer;}';
+    addRuleCSS(hoverRule);
+  }
 
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  function initUserCount() {
+    var s;
 
-}
+    var uCountSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    uCountSVG.id = 'wb-usercount-svg';
+    s = uCountSVG.style;
+    s.width = '100%';
+    s.height = '30px';
+    s.position = 'absolute';
+    s.left = '10';
+    s.bottom = '10';
+    s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
+    containerElement.appendChild(uCountSVG);
 
-function animate() {
+    uCountSVGText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    uCountSVGText.id = 'wb-usercount-text';
+    uCountSVGText.textContent = 'Loading user count...';
+    uCountSVGText.setAttribute('x', '0');
+    uCountSVGText.setAttribute('y', '30');
+    s = uCountSVGText.style;
+    s.textAnchor = 'start';
+    s.fill = '#eeeeee';
+    s.stroke = '#050505';
+    s.strokeWidth = '2px';
+    s.fontSize = '30px';
+    s.fontFamily = 'Verdana';
+    s.fontWeight = 'bold';
+    uCountSVG.appendChild(uCountSVGText);
 
-  requestAnimationFrame(animate);
+    socket.on('user count', updateUserCount);
+    socket.emit('get user count');
+  }
 
-  var delta = clock.getDelta() * spawnerOptions.timeScale;
-  tick += delta;
+  function updateUserCount(newCount) {
+    uCountSVGText.textContent = 'Online: ' + newCount;
+  }
 
-  if (tick < 0) tick = 0;
+  //////////////////// draw canvas
 
-  if (delta > 0) {
-    maxSpawn = spawnerOptions.spawnRate * delta;
+  function initDrawLayer() {
+    drawCanvas = document.createElement('canvas');
+    drawCanvas.id = 'wb-draw-layer-canvas';
+    containerElement.appendChild(drawCanvas);
+    fitCanvasToContainer(drawCanvas);
 
-    var mousePos = agents[localDrawingAgent].mousePos;
-    if (mousePos && agents[localDrawingAgent].isDrawing && mousePos.length >= 1) {
-      var posEx = mousePos[0];
-      var pos = mousePos[mousePos.length - 1];
-      for (var x = 0; x < maxSpawn; x++) {
-        percent = x / maxSpawn;
-        options.position.x = posEx[0] * (1 - percent) + pos[0] * percent;
-        options.position.y = posEx[1] * (1 - percent) + pos[1] * percent;
+    drawCanvas.style.position = 'absolute';
+    drawCanvas.style.zIndex = containerZ + DRAW_LAYER_RELATIVE_Z;
 
-        particleSystem.spawnParticle(options);
+    drawCtx = drawCanvas.getContext('2d');
+    drawCtx.lineCap = 'round';
+    drawCtx.lineJoin = 'round';
+
+    colorVal = 0xffffff;
+    size = 1;
+    isDrawing = false;
+
+    cacheCanvas = document.createElement('canvas'); // this is not in DOM body
+    fitCanvasToContainer(cacheCanvas);
+    cacheCtx = cacheCanvas.getContext('2d')
+
+    socket.on('draw line', drawLine);
+  }
+
+  function drawLine(line) {
+    drawLineOnBoard(line);
+    drawLineToCache(line);
+  }
+
+  function drawLineOnBoard(line) {
+    drawCtx.strokeStyle = line.color;
+    drawCtx.lineWidth = line.width;
+    drawCtx.beginPath();
+    drawCtx.moveTo(line.startX, line.startY);
+    drawCtx.lineTo(line.endX, line.endY);
+    drawCtx.stroke();
+  }
+
+  function drawLineToCache(line) {
+    expandCache(
+        Math.max(line.startX, line.endX),
+        Math.max(line.startY, line.endY)
+    );
+    cacheCtx.strokeStyle = line.color;
+    cacheCtx.lineWidth = line.width;
+    cacheCtx.beginPath();
+    cacheCtx.moveTo(line.startX, line.startY);
+    cacheCtx.lineTo(line.endX, line.endY);
+    cacheCtx.stroke();
+  }
+
+  // expands cache if necessary. will not shrink unless cleared (see clearScreen)
+  function expandCache(maxX, maxY) {
+    var width = cacheCanvas.width;
+    var height = cacheCanvas.height;
+    // only resize if new line out of bounds
+    if (height >= maxY && width >= maxX) return;
+
+    var snapshot = cacheCtx.getImageData(0, 0, cacheCanvas.width, cacheCanvas.height);
+    // double dimensions (don't keep resizing for small movements)
+    while (maxX > width || maxY > height) {
+      width *= 2;
+      height *= 2;
+    }
+    cacheCanvas.width = width;
+    cacheCanvas.height = height;
+    cacheCtx.putImageData(snapshot, 0, 0);
+  }
+
+  function clearScreen() {
+    fitCanvasToContainer(cacheCanvas); // reset cache size to match draw canvas size
+    cacheCtx.clearRect(0, 0, cacheCanvas.width, cacheCanvas.height);
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  }
+
+  ////////////////// 3d effects
+
+  function initGFXLayer() {
+
+    tick = 0;
+    clock = new THREE.Clock(true);
+
+    camera = new THREE.PerspectiveCamera(28, containerElement.offsetWidth / containerElement.offsetHeight, 1, 10000);
+    camera.position.z = 100;
+
+    renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true
+    });
+    renderer.setSize(containerElement.offsetWidth, containerElement.offsetHeight);
+    renderer.setClearColor(0x000000, 0);
+
+    // See THREE.js github gpuparticle example
+    particleSystem = new THREE.GPUParticleSystem({
+      maxParticles: 250000
+    });
+    scene = new THREE.Scene();
+    scene.add(particleSystem);
+
+    containerElement.appendChild(renderer.domElement);
+    fitCanvasToContainer(renderer.domElement);
+    renderer.domElement.id = 'wb-gfx-layer-canvas';
+
+    renderer.domElement.style.zIndex = containerZ + GFX_LAYER_RELATIVE_Z;
+    renderer.domElement.style.position = 'absolute';
+
+    spawnPosTracker = {
+      prevX: null,
+      newX: null,
+      prevY: null,
+      newY: null
+    };
+    particleOpts = {
+      position: new THREE.Vector3(),
+      positionRandomness: .3,
+      velocity: new THREE.Vector3(),
+      velocityRandomness: .5,
+      color: colorVal,
+      colorRandomness: .2,
+      turbulence: 0.4,
+      lifetime: 1,
+      size: 20,
+      sizeRandomness: 1
+    };
+    spawnerOpts = {
+      spawnRate: 1000,
+      horizontalSpeed: 0,
+      verticalSpeed: 0,
+      timeScale: 1
+    };
+  }
+
+  function animate() {
+
+    requestAnimationFrame(animate);
+
+    var delta = clock.getDelta() * spawnerOpts.timeScale;
+    tick += delta;
+
+    if (isDrawing && delta > 0) {
+      var maxSpawn = spawnerOpts.spawnRate * delta;
+      for (var i = 0; i < maxSpawn; i++) {
+        var percent = i / maxSpawn;
+        particleOpts.position.x = spawnPosTracker.prevX*(1 - percent) + spawnPosTracker.newX*percent;
+        particleOpts.position.y = spawnPosTracker.prevY*(1 - percent) + spawnPosTracker.newY*percent;
+        particleSystem.spawnParticle(particleOpts);
       }
     }
+
+    if (tick < 0) tick = 0;
+    particleSystem.update(tick);
+    renderer.render(scene, camera);
   }
-  for (var key in agents) {
-    if (agents.hasOwnProperty(key)) {
-      drawForAgent(agents[key]);
+
+  function getWorldPosFromCameraPos(x, y) {
+    var vector = new THREE.Vector3();
+    vector.set(
+        (x / window.innerWidth) * 2 - 1,
+        -(y / window.innerHeight) * 2 + 1,
+        0.5
+    );
+
+    vector.unproject(camera);
+
+    var dir = vector.sub(camera.position).normalize();
+    var distance = -camera.position.z / dir.z;
+    var pos = camera.position.clone().add(dir.multiplyScalar(distance));
+    return {
+      x: pos.x,
+      y: pos.y,
+      z: pos.z
     }
   }
 
-  particleSystem.update(tick);
-  render();
+  ////////////////// utility
 
-}
-
-function drawForAgent(agent) {
-  if (!agent.isDrawing || agent.isConfiguring) {
-    return;
+  function fitCanvasToContainer(canvas){
+    canvas.width  = containerElement.offsetWidth;
+    canvas.height = containerElement.offsetHeight;
   }
-  if (agent.mousePos.length >= 2) {
-    var posEx = agent.mousePos.shift();
-    var pos = agent.mousePos[agent.mousePos.length - 1];
-    // Interpolate between points
-    drawLine(agent.color, posEx[0], posEx[1], pos[0], pos[1]);
-    socket.emit('draw line', agent.color, posEx[0], posEx[1], pos[0], pos[1]);
 
-    // Leave only the last point
-    agent.mousePos = [pos];
-    // drawLine(agent.color, agent.mousePos.ex_x, agent.mousePos.ex_y, agent.mousePos.x, agent.mousePos.y);
-    // socket.emit('draw line', agent.color, agent.mousePos.ex_x, agent.mousePos.ex_y, agent.mousePos.x, agent.mousePos.y);
+  function getZIndex(element) {
+    var z = window.document.defaultView.getComputedStyle(element).getPropertyValue('z-index');
+    if (isNaN(z)) {
+      return getZIndex(element.parentNode);
+    }
+    return z;
   }
-}
 
-function drawLine(color, x0, y0, x1, y1) {
+  function getPagePosition(element) {
+    var clientRect = element.getBoundingClientRect();
+    return {
+      x: clientRect.left + window.scrollX,
+      y: clientRect.top + window.scrollY
+    };
+  }
 
-  var material = new THREE.PointsMaterial({
-    color: color,
-    size: 0.5
-  });
-  //    console.log(x0 + "," + y0 + " " + x1 + "," + y1);
-
-  // Two points at start and end of the line to smooth turning points
-  // var geometryPointS = new THREE.Geometry();
-  // geometryPointS.vertices.push(
-  //   new THREE.Vector3(x0, y0, -1)
-  // );
-  // var pointStart = new THREE.Points(geometryPointS, material);
-  // scene.add(pointStart);
-
-  // var geometryPointE = new THREE.Geometry();
-  // geometryPointE.vertices.push(
-  //   new THREE.Vector3(x1, y1, -1)
-  // );
-  // var pointEnd = new THREE.Points(geometryPointE, material);
-  // scene.add(pointEnd);
-
-  var materialLine = new THREE.LineBasicMaterial({
-    color: color,
-    linewidth: 2
-  });
-  var geometry = new THREE.Geometry();
-  geometry.vertices.push(
-    new THREE.Vector3(x0, y0, -1),
-    new THREE.Vector3(x1, y1, -1)
-  );
-  var line = new THREE.Line(geometry, materialLine);
-  scene.add(line);
-}
-
-function render() {
-  //requestAnimationFrame(render);
-  renderer.render(scene, camera);
-
-}
-
-function clearScreen() {
-  for (var i = scene.children.length - 1; i > 0; i--) {
-    // first element is THREE.GPUParticleSystem which should not be removed
-    // console.log(obj instanceof THREE.GPUParticleSystem);
-    scene.remove(scene.children[i]);
+  function addRuleCSS(ruleText) {
+    var styleElem = document.createElement('style');
+    if (styleElem.styleSheet) {
+      styleElem.styleSheet.cssText = ruleText;
+    } else {
+      styleElem.appendChild(document.createTextNode(ruleText));
+    }
+    document.getElementsByTagName('head')[0].appendChild(styleElem);
   }
 }
