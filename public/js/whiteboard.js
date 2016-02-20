@@ -10,7 +10,7 @@ function createWhiteboard(containerElement) {
 
   var DRAW_LAYER_RELATIVE_Z = 0,  // bottom layer
       drawCanvas, drawCtx,
-      colorVal, size,             // colorVal is a number
+      colorVal, penSize,             // colorVal is a number
       cacheCanvas, cacheCtx,      // hidden, used to redraw canvas on resize
       isDrawing;
 
@@ -130,7 +130,7 @@ function createWhiteboard(containerElement) {
       startY: mousePosTracker.prevY,
       endX: mousePosTracker.newX,
       endY: mousePosTracker.newY,
-      width: size,
+      width: penSize,
       color: "#" + colorVal.toString(16)
     };
 
@@ -319,7 +319,7 @@ function createWhiteboard(containerElement) {
     drawCtx.lineJoin = 'round';
 
     colorVal = DEFAULT_COLOR;
-    size = 1;
+    penSize = 2;
     isDrawing = false;
 
     cacheCanvas = document.createElement('canvas'); // this is not in DOM body
