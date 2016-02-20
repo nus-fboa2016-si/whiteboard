@@ -50,7 +50,8 @@ function createWhiteboard(containerElement) {
     containerElement.addEventListener('touchend', handleTouch, true);
     containerElement.addEventListener('touchcancel', handleTouch, true);
 
-    containerElement.addEventListener('keypress', handleKeypress, true);
+    //TODO make it only work when whiteboard container is active
+    document.addEventListener('keypress', handleKeypress, true);
 
     var RESIZE_HANDLING_RATE = 4; // 4fps resizing responsiveness
     window.addEventListener('resize', createThrottledResizeHandler(RESIZE_HANDLING_RATE));
@@ -205,7 +206,6 @@ function createWhiteboard(containerElement) {
   }
 
   function initColorPicker() {
-
     colorVal = 0xffffff;
     
     var pickerPosDiv= document.createElement('div');
@@ -303,7 +303,7 @@ function createWhiteboard(containerElement) {
     cacheCtx.stroke();
   }
 
-  // expands cache if necessary.
+  // expands cache if necessary. will not shrink unless cleared (see clearScreen)
   function expandCache(maxX, maxY) {
     var width = cacheCanvas.width;
     var height = cacheCanvas.height;
@@ -322,7 +322,9 @@ function createWhiteboard(containerElement) {
   }
 
   function clearScreen() {
-    fitCanvasToContainer(cacheCanvas);
+    fitCanvasToContainer(cacheCanvas); // reset cache size to match draw canvas size
+    cacheCtx.clearRect(0, 0, cacheCanvas.width, cacheCanvas.height);
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
   }
 
   ////////////////// 3d effects
