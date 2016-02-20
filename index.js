@@ -13,8 +13,11 @@ app.use(express.static('public'));
 
 io.on('connection', function(socket) {
     console.log('connected: ' + ++numConnected);
+    io.emit('user count', numConnected);
+
     socket.on('disconnect', function() {
         console.log('connected: ' + --numConnected);
+        io.emit('user count', numConnected);
     });
     socket.on('draw line', function(line) {
         socket.broadcast.emit('draw line', line);
