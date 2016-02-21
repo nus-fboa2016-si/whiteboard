@@ -90,7 +90,8 @@ function createWhiteboard(containerElement) {
       false, false, false, 0 /*left*/ , null);
 
     first.target.dispatchEvent(simulatedMouseEvent);
-    event.preventDefault();
+    // Don't prevent default for color picker
+    // event.preventDefault();
   }
 
   function handleKeypress(e) {
