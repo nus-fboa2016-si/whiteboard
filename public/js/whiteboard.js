@@ -59,6 +59,19 @@ function createWhiteboard(containerElement) {
     containerElement.addEventListener('touchend', handleTouch, true);
     containerElement.addEventListener('touchcancel', handleTouch, true);
 
+    // Detect mouse release outside the window
+    document.addEventListener('mouseup', handleMouseRelease, true);
+
+    // Clear position when mouse outside window but continue drawing when come back
+    document.onmouseout = function(e) {
+      e = e ? e : window.event;
+      var from = e.relatedTarget || e.toElement;
+      if (!from || from.nodeName == "HTML") {
+        // handleMouseRelease();
+        resetPosTrackers();
+      }
+    };
+
     //TODO make it only work when whiteboard container is active
     document.addEventListener('keypress', handleKeypress, true);
 
@@ -446,7 +459,7 @@ function createWhiteboard(containerElement) {
     var delta = clock.getDelta() * spawnerOpts.timeScale;
     tick += delta;
 
-    if (isDrawing && delta > 0) {
+    if (isDrawing && spawnPosTracker.newX && delta > 0) {
       var maxSpawn = spawnerOpts.spawnRate * delta;
       for (var i = 0; i < maxSpawn; i++) {
         var percent = i / maxSpawn;
