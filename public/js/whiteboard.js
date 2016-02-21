@@ -5,22 +5,22 @@ function createWhiteboard(containerElement) {
 
   var socket;
 
-  var mousePosTracker,  // relative to container
-      spawnPosTracker;  // unprojected 3d world coordinates
+  var mousePosTracker, // relative to container
+      spawnPosTracker; // unprojected 3d world coordinates
 
-  var DRAW_LAYER_RELATIVE_Z = 0,  // bottom layer
+  var DRAW_LAYER_RELATIVE_Z = 0, // bottom layer
       drawCanvas, drawCtx,
-      colorVal, penSize,             // colorVal is a number
-      cacheCanvas, cacheCtx,      // hidden, used to redraw canvas on resize
+      colorVal, penSize, // colorVal is a number
+      cacheCanvas, cacheCtx, // hidden, used to redraw canvas on resize
       isDrawing;
 
-  var GFX_LAYER_RELATIVE_Z = 1,   // middle layer
+  var GFX_LAYER_RELATIVE_Z = 1, // middle layer
       camera, scene, renderer,
       clock, tick,
       particleSystem,
       particleOpts, spawnerOpts;
 
-  var OVERLAY_RELATIVE_Z = 2,     // top layer
+  var OVERLAY_RELATIVE_Z = 2, // top layer
       pickerShape,
       uCountSVGText;
 
@@ -68,8 +68,8 @@ function createWhiteboard(containerElement) {
 
   function handleTouch(e) {
     var touches = e.changedTouches,
-        first = touches[0],
-        type = "";
+      first = touches[0],
+      type = "";
     switch (e.type) {
       case "touchstart":
         type = "mousedown";
@@ -85,9 +85,9 @@ function createWhiteboard(containerElement) {
     }
     var simulatedMouseEvent = document.createEvent('MouseEvent');
     simulatedMouseEvent.initMouseEvent(type, true, true, window, 1,
-        first.screenX, first.screenY,
-        first.clientX, first.clientY, false,
-        false, false, false, 0 /*left*/ , null);
+      first.screenX, first.screenY,
+      first.clientX, first.clientY, false,
+      false, false, false, 0 /*left*/ , null);
 
     first.target.dispatchEvent(simulatedMouseEvent);
     event.preventDefault();
@@ -107,7 +107,7 @@ function createWhiteboard(containerElement) {
     var containerPagePos = getPagePosition(containerElement);
     var x = e.offsetX + targetPagePos.x - containerPagePos.x;
     var y = e.offsetY + targetPagePos.y - containerPagePos.y;
-    updatePosTrackers(x,y);
+    updatePosTrackers(x, y);
     isDrawing = true;
   }
 
@@ -124,7 +124,7 @@ function createWhiteboard(containerElement) {
     var x = e.offsetX + targetPagePos.x - containerPagePos.x;
     var y = e.offsetY + targetPagePos.y - containerPagePos.y;
     updatePosTrackers(x, y);
-    
+
     var newLine = {
       startX: mousePosTracker.prevX,
       startY: mousePosTracker.prevY,
@@ -149,11 +149,11 @@ function createWhiteboard(containerElement) {
     return function() {
       if (resizeTimeout != null) return; // resize control timer has not cooled down
       resizeTimeout = setTimeout(
-          function() {
-            resizeTimeout = null;
-            resizeHandler();
-          },
-          1000/targetRate
+        function() {
+          resizeTimeout = null;
+          resizeHandler();
+        },
+        1000 / targetRate
       );
     };
   }
@@ -193,15 +193,15 @@ function createWhiteboard(containerElement) {
     var m = mousePosTracker;
     var s = spawnPosTracker;
     m.newX =
-        m.newY =
-            m.prevX =
-                m.prevY =
-                    null;
+      m.newY =
+      m.prevX =
+      m.prevY =
+      null;
     s.newX =
-        s.newY =
-            s.prevX =
-                s.prevY =
-                    null;
+      s.newY =
+      s.prevX =
+      s.prevY =
+      null;
   }
 
   function updateTracker(tracker, x, y) {
@@ -221,8 +221,8 @@ function createWhiteboard(containerElement) {
   function initColorPicker() {
     var s;
     colorVal = DEFAULT_COLOR;
-    
-    var pickerPosDiv= document.createElement('div');
+
+    var pickerPosDiv = document.createElement('div');
     containerElement.appendChild(pickerPosDiv);
     s = pickerPosDiv.style;
     s.position = 'absolute';
@@ -247,22 +247,23 @@ function createWhiteboard(containerElement) {
     pickerShape.setAttribute('cx', '15');
     pickerShape.setAttribute('cy', '15');
     pickerShape.setAttribute('r', '15');
-    pickerShape.setAttribute('fill', '#'+colorVal.toString(16));
+    pickerShape.setAttribute('fill', '#' + colorVal.toString(16));
     pickerSvg.appendChild(pickerShape);
 
     $(pickerShape).spectrum({
       color: '#' + colorVal.toString(16),
       showButtons: false,
+      clickoutFiresChange: true,
       change: function(newColor) {
+        console.log("change");
         var colorHex = newColor.toHex();
-        pickerShape.setAttribute('fill', '#'+colorHex);
+        pickerShape.setAttribute('fill', '#' + colorHex);
         colorVal = parseInt(colorHex, 16);
         particleOpts.color = colorVal;
+        console.log(colorVal);
       },
-      hide: function(color) {
-      },
-      show: function(color) {
-      }
+      hide: function(color) {},
+      show: function(color) {}
     });
 
     var hoverRule = '#' + pickerShape.id + ':hover{cursor:pointer;}';
@@ -345,8 +346,8 @@ function createWhiteboard(containerElement) {
 
   function drawLineToCache(line) {
     expandCache(
-        Math.max(line.startX, line.endX),
-        Math.max(line.startY, line.endY)
+      Math.max(line.startX, line.endX),
+      Math.max(line.startY, line.endY)
     );
     cacheCtx.strokeStyle = line.color;
     cacheCtx.lineWidth = line.width;
@@ -448,8 +449,8 @@ function createWhiteboard(containerElement) {
       var maxSpawn = spawnerOpts.spawnRate * delta;
       for (var i = 0; i < maxSpawn; i++) {
         var percent = i / maxSpawn;
-        particleOpts.position.x = spawnPosTracker.prevX*(1 - percent) + spawnPosTracker.newX*percent;
-        particleOpts.position.y = spawnPosTracker.prevY*(1 - percent) + spawnPosTracker.newY*percent;
+        particleOpts.position.x = spawnPosTracker.prevX * (1 - percent) + spawnPosTracker.newX * percent;
+        particleOpts.position.y = spawnPosTracker.prevY * (1 - percent) + spawnPosTracker.newY * percent;
         particleSystem.spawnParticle(particleOpts);
       }
     }
@@ -462,9 +463,8 @@ function createWhiteboard(containerElement) {
   function getWorldPosFromCameraPos(x, y) {
     var vector = new THREE.Vector3();
     vector.set(
-        (x / window.innerWidth) * 2 - 1,
-        -(y / window.innerHeight) * 2 + 1,
-        0.5
+      (x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1,
+      0.5
     );
 
     vector.unproject(camera);
@@ -481,8 +481,8 @@ function createWhiteboard(containerElement) {
 
   ////////////////// utility
 
-  function fitCanvasToContainer(canvas){
-    canvas.width  = containerElement.offsetWidth;
+  function fitCanvasToContainer(canvas) {
+    canvas.width = containerElement.offsetWidth;
     canvas.height = containerElement.offsetHeight;
   }
 
