@@ -1,0 +1,20 @@
+{
+  "extends": "standard",
+  "parser": "babel-eslint",
+  "rules": {
+    "yoda": 0,
+    "semi": [2, "always"],
+    "no-extra-semi": 2,
+    "semi-spacing": [2, { "before": false, "after": true }],
+    "space-before-function-paren": [2, "never"]
+  },
+  "globals": {
+    "THREE": false,
+    "io": false,
+    "$": false
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  }
+}
