@@ -1,32 +1,31 @@
-function createWhiteboard(containerElement) {
-
+var createWhiteboard = function(containerElement) {
   var containerZ,
-      prevContainerWidth, prevContainerHeight;
+    prevContainerWidth, prevContainerHeight;
 
   var socket;
 
   var mousePosTracker, // relative to container
-      spawnPosTracker; // unprojected 3d world coordinates
+    spawnPosTracker; // unprojected 3d world coordinates
 
-  var DRAW_LAYER_RELATIVE_Z = 0, // bottom layer
-      drawCanvas, drawCtx,
-      colorVal, penSize, // colorVal is a number
-      cacheCanvas, cacheCtx, // hidden, used to redraw canvas on resize
-      isDrawing;
+  var DRAW_LAYER_RELATIVE_Z = 0; // bottom layer
+  var drawCanvas, drawCtx,
+    colorVal, penSize, // colorVal is a number
+    cacheCanvas, cacheCtx, // hidden, used to redraw canvas on resize
+    isDrawing;
 
-  var GFX_LAYER_RELATIVE_Z = 1, // middle layer
-      camera, scene, renderer,
-      clock, tick,
-      particleSystem,
-      particleOpts, spawnerOpts;
+  var GFX_LAYER_RELATIVE_Z = 1; // middle layer
+  var camera, scene, renderer,
+    clock, tick,
+    particleSystem,
+    particleOpts, spawnerOpts;
 
-  var OVERLAY_RELATIVE_Z = 2, // top layer
-      pickerShape,
-      uCountSVGText;
+  var OVERLAY_RELATIVE_Z = 2; // top layer
+  var pickerShape,
+    uCountSVGText;
 
   var DEFAULT_COLOR = 0xaa88ff; // alternatively, 0xffffff
 
-  /////////////////// end shared var declarations
+  // ///////////////// end shared var declarations
 
   socket = io(); // WAOW! AMAZING!
 
@@ -40,14 +39,13 @@ function createWhiteboard(containerElement) {
   animate();
   initEventHandlers();
 
-
   function recordContainerDimensions() {
     containerZ = getZIndex(containerElement);
     prevContainerWidth = containerElement.offsetWidth;
     prevContainerHeight = containerElement.offsetHeight;
   }
 
-  ////////////////// events
+  // //////////////// events
 
   function initEventHandlers() {
     containerElement.addEventListener('mousedown', handleMousePress, true);
@@ -64,15 +62,15 @@ function createWhiteboard(containerElement) {
 
     // Clear position when mouse outside window but continue drawing when come back
     document.onmouseout = function(e) {
-      e = e ? e : window.event;
+      e = e || window.event;
       var from = e.relatedTarget || e.toElement;
-      if (!from || from.nodeName == "HTML") {
+      if (!from || from.nodeName === 'HTML') {
         // handleMouseRelease();
         resetPosTrackers();
       }
     };
 
-    //TODO make it only work when whiteboard container is active
+    // TODO make it only work when whiteboard container is active
     document.addEventListener('keypress', handleKeypress, true);
 
     var RESIZE_HANDLING_RATE = 4; // 4fps resizing responsiveness
@@ -80,18 +78,18 @@ function createWhiteboard(containerElement) {
   }
 
   function handleTouch(e) {
-    var touches = e.changedTouches,
-      first = touches[0],
-      type = "";
+    var touches = e.changedTouches;
+    var first = touches[0];
+    var type = '';
     switch (e.type) {
-      case "touchstart":
-        type = "mousedown";
+      case 'touchstart':
+        type = 'mousedown';
         break;
-      case "touchmove":
-        type = "mousemove";
+      case 'touchmove':
+        type = 'mousemove';
         break;
-      case "touchend":
-        type = "mouseup";
+      case 'touchend':
+        type = 'mouseup';
         break;
       default:
         return;
@@ -100,7 +98,7 @@ function createWhiteboard(containerElement) {
     simulatedMouseEvent.initMouseEvent(type, true, true, window, 1,
       first.screenX, first.screenY,
       first.clientX, first.clientY, false,
-      false, false, false, 0 /*left*/ , null);
+      false, false, false, 0 /* left*/, null);
 
     first.target.dispatchEvent(simulatedMouseEvent);
     // Don't prevent default for color picker
@@ -145,7 +143,7 @@ function createWhiteboard(containerElement) {
       endX: mousePosTracker.newX,
       endY: mousePosTracker.newY,
       width: penSize,
-      color: "#" + colorVal.toString(16)
+      color: '#' + colorVal.toString(16)
     };
 
     drawLine(newLine);
@@ -189,7 +187,7 @@ function createWhiteboard(containerElement) {
     recordContainerDimensions();
   }
 
-  //////////////////// coordinate trackers
+  // ////////////////// coordinate trackers
 
   function initPosTrackers() {
     mousePosTracker = {};
@@ -225,7 +223,7 @@ function createWhiteboard(containerElement) {
     tracker.newY = y;
   }
 
-  //////////////////// overlay (color picker, connection count etc)
+  // ////////////////// overlay (color picker, connection count etc)
 
   function initOverlay() {
     initUserCount();
@@ -244,8 +242,8 @@ function createWhiteboard(containerElement) {
 
     var pickerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     pickerSvg.id = 'wb-overlay-color-picker-svg';
-    //pickerSvg.setAttribute('height', '30');
-    //pickerSvg.setAttribute('width', '30');
+    // pickerSvg.setAttribute('height', '30');
+    // pickerSvg.setAttribute('width', '30');
     pickerPosDiv.appendChild(pickerSvg);
     s = pickerSvg.style;
     s.height = '30px';
@@ -269,7 +267,7 @@ function createWhiteboard(containerElement) {
       showButtons: false,
       clickoutFiresChange: true,
       change: function(newColor) {
-        console.log("change");
+        console.log('change');
         var colorHex = newColor.toHex();
         pickerShape.setAttribute('fill', '#' + colorHex);
         colorVal = parseInt(colorHex, 16);
@@ -318,7 +316,7 @@ function createWhiteboard(containerElement) {
     uCountSVGText.textContent = 'CONNECTED: ' + newCount;
   }
 
-  //////////////////// draw canvas
+  // ////////////////// draw canvas
 
   function initDrawLayer() {
     drawCanvas = document.createElement('canvas');
@@ -339,7 +337,7 @@ function createWhiteboard(containerElement) {
 
     cacheCanvas = document.createElement('canvas'); // this is not in DOM body
     fitCanvasToContainer(cacheCanvas);
-    cacheCtx = cacheCanvas.getContext('2d')
+    cacheCtx = cacheCanvas.getContext('2d');
 
     socket.on('draw line', drawLine);
   }
@@ -395,10 +393,9 @@ function createWhiteboard(containerElement) {
     drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
   }
 
-  ////////////////// 3d effects
+  // //////////////// 3d effects
 
   function initGFXLayer() {
-
     tick = 0;
     clock = new THREE.Clock(true);
 
@@ -434,11 +431,11 @@ function createWhiteboard(containerElement) {
     };
     particleOpts = {
       position: new THREE.Vector3(),
-      positionRandomness: .3,
+      positionRandomness: 0.3,
       velocity: new THREE.Vector3(),
-      velocityRandomness: .5,
+      velocityRandomness: 0.5,
       color: colorVal,
-      colorRandomness: .2,
+      colorRandomness: 0.2,
       turbulence: 0.4,
       lifetime: 1,
       size: 20,
@@ -453,7 +450,6 @@ function createWhiteboard(containerElement) {
   }
 
   function animate() {
-
     requestAnimationFrame(animate);
 
     var delta = clock.getDelta() * spawnerOpts.timeScale;
@@ -490,10 +486,10 @@ function createWhiteboard(containerElement) {
       x: pos.x,
       y: pos.y,
       z: pos.z
-    }
+    };
   }
 
-  ////////////////// utility
+  // //////////////// utility
 
   function fitCanvasToContainer(canvas) {
     canvas.width = containerElement.offsetWidth;
@@ -502,7 +498,7 @@ function createWhiteboard(containerElement) {
 
   function getZIndex(element) {
     var z = window.document.defaultView.getComputedStyle(element).getPropertyValue('z-index');
-    if (element.nodeName == 'BODY') return 0;
+    if (element.nodeName === 'BODY') return 0;
     if (isNaN(z)) {
       return getZIndex(element.parentNode);
     }
@@ -526,4 +522,8 @@ function createWhiteboard(containerElement) {
     }
     document.getElementsByTagName('head')[0].appendChild(styleElem);
   }
-}
+};
+
+$(function() {
+  createWhiteboard(document.getElementById('whiteboard'));
+});

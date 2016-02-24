@@ -1,16 +1,18 @@
 var socket = io();
 
-var camera, tick = 0,
-    scene, renderer, clock = new THREE.Clock(true),
-    container,
-    options, spawnerOptions, particleSystem;
+var tick = 0;
+var clock = new THREE.Clock(true);
+var camera,
+  scene, renderer,
+  container,
+  options, spawnerOptions, particleSystem;
 
-var defaultColor = currentColor = "#aa88ff";
+var defaultColor = '#aa88ff';
+var currentColor = '#aa88ff';
 var currentColorHex = 0xaa88ff;
 
-var localDrawingAgent = "local";
+var localDrawingAgent = 'local';
 var agents = {};
-
 
 function DrawingAgent(name, color) {
   this.name = name;
@@ -49,7 +51,7 @@ function DrawingAgent(name, color) {
 
     // clear previous mouse positions
     this.mousePos = [];
-  }
+  };
 
   this.startConfiguring = function() {
     this.isConfiguring = true;
@@ -57,28 +59,27 @@ function DrawingAgent(name, color) {
 
   this.stopConfiguring = function() {
     this.isConfiguring = false;
-  }
-
+  };
 }
 
 agents[localDrawingAgent] = new DrawingAgent(localDrawingAgent, currentColorHex);
 
-$("#circle").spectrum({
+$('#circle').spectrum({
   color: defaultColor,
   showButtons: false,
   change: function(color) {
     currentColor = color.toHexString(); // #ff0000
-    $("#circle").attr("fill", currentColor);
+    $('#circle').attr('fill', currentColor);
     currentColorHex = parseInt(currentColor.replace(/^#/, ''), 16);
     options.color = currentColorHex;
     agents[localDrawingAgent].color = currentColorHex;
   },
   hide: function(color) {
-    console.log("hide");
+    console.log('hide');
     agents[localDrawingAgent].stopConfiguring();
   },
   show: function(color) {
-    console.log("show");
+    console.log('show');
     agents[localDrawingAgent].startConfiguring();
   }
 });
@@ -92,7 +93,7 @@ function handleMouseDown(event) {
 }
 
 function handleMouseMove(event) {
-  var dot, eventDoc, doc, body, pageX, pageY;
+  var eventDoc, doc, body;
 
   event = event || window.event; // IE-ism
 
@@ -135,18 +136,18 @@ function handleMouseMove(event) {
 
 // Map touch events to mouse events
 function touchHandler(event) {
-  var touches = event.changedTouches,
-      first = touches[0],
-      type = "";
+  var touches = event.changedTouches;
+  var first = touches[0];
+  var type = '';
   switch (event.type) {
-    case "touchstart":
-      type = "mousedown";
+    case 'touchstart':
+      type = 'mousedown';
       break;
-    case "touchmove":
-      type = "mousemove";
+    case 'touchmove':
+      type = 'mousemove';
       break;
-    case "touchend":
-      type = "mouseup";
+    case 'touchend':
+      type = 'mouseup';
       break;
     default:
       return;
@@ -156,11 +157,11 @@ function touchHandler(event) {
   //                screenX, screenY, clientX, clientY, ctrlKey,
   //                altKey, shiftKey, metaKey, button, relatedTarget);
 
-  var simulatedEvent = document.createEvent("MouseEvent");
+  var simulatedEvent = document.createEvent('MouseEvent');
   simulatedEvent.initMouseEvent(type, true, true, window, 1,
-      first.screenX, first.screenY,
-      first.clientX, first.clientY, false,
-      false, false, false, 0 /*left*/ , null);
+    first.screenX, first.screenY,
+    first.clientX, first.clientY, false,
+    false, false, false, 0 /* left*/, null);
 
   first.target.dispatchEvent(simulatedEvent);
   event.preventDefault();
@@ -179,30 +180,29 @@ function initEventListeners() {
   document.onmousedown = handleMouseDown;
   document.onmouseup = handleMouseUp;
 
-  document.addEventListener("touchstart", touchHandler, true);
-  document.addEventListener("touchmove", touchHandler, true);
-  document.addEventListener("touchend", touchHandler, true);
-  document.addEventListener("touchcancel", touchHandler, true);
+  document.addEventListener('touchstart', touchHandler, true);
+  document.addEventListener('touchmove', touchHandler, true);
+  document.addEventListener('touchend', touchHandler, true);
+  document.addEventListener('touchcancel', touchHandler, true);
 
-  document.addEventListener("keypress", keypressHandler, true);
+  document.addEventListener('keypress', keypressHandler, true);
 }
 
 initEventListeners();
 
 init();
 animate();
-var msgcount = 0;
-socket.on("draw line", function() {
+socket.on('draw line', function() {
   drawLine.apply(null, arguments);
 });
 
-socket.on("user count", function(count) {
+socket.on('user count', function(count) {
   console.log(count);
-  updateCount(count);
+  // updateCount(count);
 });
 
 function init() {
-  initCount();
+  // initCount();
   container = document.createElement('div');
   document.body.appendChild(container);
 
@@ -220,17 +220,16 @@ function init() {
   });
   scene.add(particleSystem);
 
-
   // options passed during each spawned
   options = {
     position: new THREE.Vector3(),
-    positionRandomness: .3,
+    positionRandomness: 0.3,
     // positionRandomness: 0,
     velocity: new THREE.Vector3(),
     // velocityRandomness: 0,
-    velocityRandomness: .5,
+    velocityRandomness: 0.5,
     color: currentColorHex,
-    colorRandomness: .2,
+    colorRandomness: 0.2,
     turbulence: 0.1,
     lifetime: 0.4,
     // size: 5,
@@ -248,25 +247,21 @@ function init() {
   renderer = new THREE.WebGLRenderer({
     antialias: true
   });
-  //renderer.setPixelRatio(window.devicePixelRatio);
+  // renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   container.appendChild(renderer.domElement);
 
   window.addEventListener('resize', onWindowResize, false);
-
 }
 
 function onWindowResize() {
-
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
 
   renderer.setSize(window.innerWidth, window.innerHeight);
-
 }
 
 function animate() {
-
   requestAnimationFrame(animate);
 
   var delta = clock.getDelta() * spawnerOptions.timeScale;
@@ -275,14 +270,14 @@ function animate() {
   if (tick < 0) tick = 0;
 
   if (delta > 0) {
-    maxSpawn = spawnerOptions.spawnRate * delta;
+    var maxSpawn = spawnerOptions.spawnRate * delta;
 
     var mousePos = agents[localDrawingAgent].mousePos;
     if (mousePos && agents[localDrawingAgent].isDrawing && mousePos.length >= 1) {
       var posEx = mousePos[0];
       var pos = mousePos[mousePos.length - 1];
       for (var x = 0; x < maxSpawn; x++) {
-        percent = x / maxSpawn;
+        var percent = x / maxSpawn;
         options.position.x = posEx[0] * (1 - percent) + pos[0] * percent;
         options.position.y = posEx[1] * (1 - percent) + pos[1] * percent;
 
@@ -298,7 +293,6 @@ function animate() {
 
   particleSystem.update(tick);
   render();
-
 }
 
 function drawForAgent(agent) {
@@ -320,11 +314,10 @@ function drawForAgent(agent) {
 }
 
 function drawLine(color, x0, y0, x1, y1) {
-
-  var material = new THREE.PointsMaterial({
-    color: color,
-    size: 0.5
-  });
+  // var material = new THREE.PointsMaterial({
+  //   color: color,
+  //   size: 0.5
+  // });
   //    console.log(x0 + "," + y0 + " " + x1 + "," + y1);
 
   // Two points at start and end of the line to smooth turning points
@@ -356,9 +349,8 @@ function drawLine(color, x0, y0, x1, y1) {
 }
 
 function render() {
-  //requestAnimationFrame(render);
+  // requestAnimationFrame(render);
   renderer.render(scene, camera);
-
 }
 
 function clearScreen() {
