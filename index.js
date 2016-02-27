@@ -5,6 +5,17 @@ var io = require('socket.io')(http);
 
 var numConnected = 0;
 
+var BUFFER_MAX = 500;
+
+var drawingBuffer = [];
+
+function addToBuffer(line) {
+  drawingBuffer.push(line);
+  if (drawingBuffer.length > BUFFER_MAX) {
+    drawingBuffer.shift();
+  }
+}
+
 app.use(express.static('public'));
 
 io.on('connection', function(socket) {
@@ -13,6 +24,12 @@ io.on('connection', function(socket) {
 
   io.emit('user count', numConnected);
 
+  // send buffered lines to client
+  console.log('buffered draw line for new user');
+  for (var i = drawingBuffer.length - 1; i >= 0; i--) {
+    socket.emit('draw line', drawingBuffer[i]);
+  }
+
   socket.on('disconnect', function() {
     numConnected--;
     console.log('connected: ' + numConnected);
@@ -20,6 +37,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('draw line', function(line) {
+    addToBuffer(line);
     socket.broadcast.emit('draw line', line);
   });
 
