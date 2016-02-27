@@ -437,8 +437,8 @@ var createWhiteboard = function(containerElement) {
       color: colorVal,
       colorRandomness: 0.2,
       turbulence: 0.4,
-      lifetime: 1,
-      size: 20,
+      lifetime: 0.8,
+      size: 16,
       sizeRandomness: 1
     };
     spawnerOpts = {
