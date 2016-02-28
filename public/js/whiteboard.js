@@ -4,8 +4,8 @@ var createWhiteboard = function(containerElement) {
 
   var socket;
 
-  var mousePosTracker, // relative to container
-    spawnPosTracker; // unprojected 3d world coordinates
+  var mouse2dPosTracker, // relative to container
+    mouse3dPosTracker; // unprojected 3d world coordinates
 
   var DRAW_LAYER_RELATIVE_Z = 0; // bottom layer
   var drawCanvas, drawCtx,
@@ -130,10 +130,10 @@ var createWhiteboard = function(containerElement) {
     updatePosTrackers(x, y);
 
     var newLine = {
-      startX: mousePosTracker.prevX,
-      startY: mousePosTracker.prevY,
-      endX: mousePosTracker.newX,
-      endY: mousePosTracker.newY,
+      startX: mouse2dPosTracker.prevX,
+      startY: mouse2dPosTracker.prevY,
+      endX: mouse2dPosTracker.newX,
+      endY: mouse2dPosTracker.newY,
       width: penSize,
       color: '#' + colorVal.toString(16)
     };
@@ -191,20 +191,20 @@ var createWhiteboard = function(containerElement) {
   // ////////////////// coordinate trackers
 
   function initPosTrackers() {
-    mousePosTracker = {};
-    spawnPosTracker = {};
+    mouse2dPosTracker = {};
+    mouse3dPosTracker = {};
     resetPosTrackers();
   }
 
   function updatePosTrackers(offsetX, offsetY) {
-    updateTracker(mousePosTracker, offsetX, offsetY);
+    updateTracker(mouse2dPosTracker, offsetX, offsetY);
     var newSpawnPos = getWorldPosFromCameraPos(offsetX, offsetY);
-    updateTracker(spawnPosTracker, newSpawnPos.x, newSpawnPos.y);
+    updateTracker(mouse3dPosTracker, newSpawnPos.x, newSpawnPos.y);
   }
 
   function resetPosTrackers() {
-    var m = mousePosTracker;
-    var s = spawnPosTracker;
+    var m = mouse2dPosTracker;
+    var s = mouse3dPosTracker;
     m.newX =
       m.newY =
       m.prevX =
@@ -424,7 +424,7 @@ var createWhiteboard = function(containerElement) {
     renderer.domElement.style.zIndex = containerZ + GFX_LAYER_RELATIVE_Z;
     renderer.domElement.style.position = 'absolute';
 
-    spawnPosTracker = {
+    mouse3dPosTracker = {
       prevX: null,
       newX: null,
       prevY: null,
@@ -453,29 +453,45 @@ var createWhiteboard = function(containerElement) {
   function animate() {
     requestAnimationFrame(animate);
 
+    // timekeeping
     var delta = clock.getDelta() * spawnerOpts.timeScale;
+    var maxSpawn = spawnerOpts.spawnRate * delta;
     tick += delta;
 
-    if (isDrawing && spawnPosTracker.newX && delta > 0) {
-      var maxSpawn = spawnerOpts.spawnRate * delta;
-      for (var i = 0; i < maxSpawn; i++) {
-        var percent = i / maxSpawn;
-        particleOpts.position.x = spawnPosTracker.prevX * (1 - percent) + spawnPosTracker.newX * percent;
-        particleOpts.position.y = spawnPosTracker.prevY * (1 - percent) + spawnPosTracker.newY * percent;
-        particleSystem.spawnParticle(particleOpts);
-      }
-    }
+    spawnUserParticles(maxSpawn);
 
     if (tick < 0) tick = 0;
     particleSystem.update(tick);
     renderer.render(scene, camera);
   }
 
+  function spawnUserParticles(number) {
+    if (!isDrawing || !mouse3dPosTracker.newX) return;
+    spawnParticlesAlongLine(
+      number,
+      { // use mouse pos so particles will still spawn on click-and-hold
+        startX: mouse3dPosTracker.prevX,
+        endX: mouse3dPosTracker.newX,
+        startY: mouse3dPosTracker.prevY,
+        endY: mouse3dPosTracker.newY
+      }
+    );
+  }
+
+  function spawnParticlesAlongLine(number, line) {
+    for (var i = 0; i < number; i++) {
+      var percent = i / number;
+      particleOpts.position.x = line.startX * (1 - percent) + line.endX * percent;
+      particleOpts.position.y = line.startY * (1 - percent) + line.endY * percent;
+      particleSystem.spawnParticle(particleOpts);
+    }
+  }
+
   function getWorldPosFromCameraPos(x, y) {
     var vector = new THREE.Vector3();
     vector.set(
-      (x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1,
-      0.5
+        (x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1,
+        0.5
     );
 
     vector.unproject(camera);
