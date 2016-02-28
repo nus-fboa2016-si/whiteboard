@@ -59,16 +59,8 @@ var createWhiteboard = function(containerElement) {
 
     // Detect mouse release outside the window
     document.addEventListener('mouseup', handleMouseRelease, true);
-
     // Clear position when mouse outside window but continue drawing when come back
-    document.onmouseout = function(e) {
-      e = e || window.event;
-      var from = e.relatedTarget || e.toElement;
-      if (!from || from.nodeName === 'HTML') {
-        // handleMouseRelease();
-        resetPosTrackers();
-      }
-    };
+    document.onmouseout = handleMouseOut;
 
     // TODO make it only work when whiteboard container is active
     document.addEventListener('keypress', handleKeypress, true);
@@ -148,6 +140,15 @@ var createWhiteboard = function(containerElement) {
 
     drawLine(newLine);
     socket.emit('draw line', newLine);
+  }
+
+  function handleMouseOut(e) {
+    e = e || window.event;
+    var from = e.relatedTarget || e.toElement;
+    if (!from || from.nodeName === 'HTML') {
+      // handleMouseRelease();
+      resetPosTrackers();
+    }
   }
 
   /*
