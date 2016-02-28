@@ -339,16 +339,16 @@ var createWhiteboard = function(containerElement) {
 
   function drawLine(line) {
     // board update
-    drawLineToCanvasCtx(line, drawCtx);
+    drawLineTo2dCtx(line, drawCtx);
     // cache update
     expandCache(
         Math.max(line.startX, line.endX),
         Math.max(line.startY, line.endY)
     );
-    drawLineToCanvasCtx(line, cacheCtx);
+    drawLineTo2dCtx(line, cacheCtx);
   }
 
-  function drawLineToCanvasCtx(line, ctx) {
+  function drawLineTo2dCtx(line, ctx) {
     ctx.strokeStyle = '#' + line.colorHex;
     ctx.lineWidth = line.width;
     ctx.beginPath();
@@ -413,7 +413,7 @@ var createWhiteboard = function(containerElement) {
     renderer.domElement.style.position = 'absolute';
 
     spawnerOpts = {
-      spawnRate: 1000,
+      spawnRate: 3000,
       horizontalSpeed: 0,
       verticalSpeed: 0,
       timeScale: 1
