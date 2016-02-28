@@ -26,9 +26,10 @@ io.on('connection', function(socket) {
 
   // send buffered lines to client
   console.log('buffered draw line for new user');
-  for (var i = drawingBuffer.length - 1; i >= 0; i--) {
-    socket.emit('draw line', drawingBuffer[i]);
-  }
+  //for (var i = drawingBuffer.length - 1; i >= 0; i--) {
+  //  socket.emit('draw line', drawingBuffer[i]);
+  //}
+  socket.emit('buffered lines', drawingBuffer);
 
   socket.on('disconnect', function() {
     numConnected--;
