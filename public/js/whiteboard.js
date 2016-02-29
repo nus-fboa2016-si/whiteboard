@@ -192,7 +192,6 @@ var createWhiteboard = function(containerElement) {
 
   function initPosTrackers() {
     mouse2dPosTracker = {};
-    mouse3dPosTracker = {};
     resetPosTrackers();
   }
 
@@ -328,10 +327,10 @@ var createWhiteboard = function(containerElement) {
     fitCanvasToContainer(cacheCanvas);
     cacheCtx = cacheCanvas.getContext('2d');
 
-    socket.on('buffered lines', function(lines){
+    socket.on('buffered lines', function(lines) {
       lines.forEach(drawLine);
     });
-    socket.on('draw line', function(line){
+    socket.on('draw line', function(line) {
       drawLine(line);
       unanimatedLines.push(line);
     });
@@ -354,7 +353,7 @@ var createWhiteboard = function(containerElement) {
     ctx.beginPath();
     ctx.moveTo(line.startX, line.startY);
     ctx.lineTo(line.endX, line.endY);
-    ctx.stroke();    
+    ctx.stroke();
   }
 
   // expands cache if necessary. will not shrink unless cleared (see clearScreen)
@@ -426,8 +425,8 @@ var createWhiteboard = function(containerElement) {
     var maxSpawn = spawnerOpts.spawnRate * delta;
     tick += delta;
 
-    unanimatedLines.forEach(function(line){
-      spawnParticlesAlongLine(maxSpawn/unanimatedLines.length, line);
+    unanimatedLines.forEach(function(line) {
+      spawnParticlesAlongLine(maxSpawn / unanimatedLines.length, line);
     });
     unanimatedLines = [];
 
