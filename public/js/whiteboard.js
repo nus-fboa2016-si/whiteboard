@@ -107,10 +107,15 @@ var createWhiteboard = function(containerElement) {
 
   function handleMousePress(e) {
     e.preventDefault();
+    // Compatibility fix for firefox
+    var xpos = e.offsetX === undefined
+      ? (e.originalEvent === undefined ? e.layerX : e.originalEvent.layerX) : e.offsetX;
+    var ypos = e.offsetY === undefined
+      ? (e.originalEvent === undefined ? e.layerY : e.originalEvent.layerY) : e.offsetY;
     var targetPagePos = getPagePosition(e.target);
     var containerPagePos = getPagePosition(containerElement);
-    var x = e.offsetX + targetPagePos.x - containerPagePos.x;
-    var y = e.offsetY + targetPagePos.y - containerPagePos.y;
+    var x = xpos + targetPagePos.x - containerPagePos.x;
+    var y = ypos + targetPagePos.y - containerPagePos.y;
     updateTracker(mouse2dPosTracker, x, y);
     isDrawing = true;
   }
@@ -122,11 +127,15 @@ var createWhiteboard = function(containerElement) {
 
   function handleMouseMove(e) {
     if (!isDrawing) return;
-
+    // Compatibility fix for firefox
+    var xpos = e.offsetX === undefined
+      ? (e.originalEvent === undefined ? e.layerX : e.originalEvent.layerX) : e.offsetX;
+    var ypos = e.offsetY === undefined
+      ? (e.originalEvent === undefined ? e.layerY : e.originalEvent.layerY) : e.offsetY;
     var targetPagePos = getPagePosition(e.target);
     var containerPagePos = getPagePosition(containerElement);
-    var x = e.offsetX + targetPagePos.x - containerPagePos.x;
-    var y = e.offsetY + targetPagePos.y - containerPagePos.y;
+    var x = xpos + targetPagePos.x - containerPagePos.x;
+    var y = ypos + targetPagePos.y - containerPagePos.y;
     updateTracker(mouse2dPosTracker, x, y);
     var newLine = {
       startX: mouse2dPosTracker.prevX,
