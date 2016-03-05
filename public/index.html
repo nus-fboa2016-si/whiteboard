@@ -15,18 +15,47 @@
       height: 100vh;
       width: 100vw;
     }
+
+    #color-picker-container {
+      position: absolute;
+      width: 100%;
+      z-index: 2;
+      margin-top: 10px;
+    }
+
+    #color-picker-wrapper {
+      margin: 0 auto;
+      border-radius: 100%;
+      width: 32px;
+      height: 32px;
+    }
+
+    #color-picker {
+      opacity: 0;
+      display: block;
+      width: 32px;
+      height: 32px;
+      border: none;
+    }
   </style>
 </head>
 
 <body>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
+  <!-- Legacy color picker -->
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script> -->
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r74/three.min.js"></script>
   <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/GPUParticleSystem.js" charset="utf-8"></script>
   <script src="js/whiteboard.js"></script>
-  <div id="whiteboard"></div>
+  <div id="whiteboard">
+    <div id="color-picker-container">
+      <div id="color-picker-wrapper">
+        <input id="color-picker" type="color" value="#aa88ff"/>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

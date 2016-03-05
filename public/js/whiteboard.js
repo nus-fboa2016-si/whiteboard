@@ -228,56 +228,67 @@ var createWhiteboard = function(containerElement) {
   }
 
   function initColorPicker() {
-    var pickerElem = initPickerElement();
-    var hoverRule = '#' + pickerElem.id + ':hover{cursor:pointer;}';
-    addRuleCSS(hoverRule);
-
-    $(pickerElem).spectrum({
-      color: '#' + colorHex,
-      showButtons: false,
-      clickoutFiresChange: true,
-      change: function(newColor) {
-        colorHex = newColor.toHex();
-        pickerElem.setAttribute('fill', '#' + colorHex);
-      },
-      hide: function(color) {},
-      show: function(color) {}
-    });
+    var input = document.getElementById('color-picker');
+    var wrapper = document.getElementById('color-picker-wrapper');
+    input.onchange = function() {
+      wrapper.style.backgroundColor = input.value;
+      colorHex = input.value.replace('#', '');
+    };
+    wrapper.style.backgroundColor = input.value;
   }
 
-  function initPickerElement() {
-    var s;
-    colorHex = DEFAULT_COLORHEX;
+  // Legacy color picker code
+  // function initColorPicker() {
+  //   var pickerElem = initPickerElement();
+  //   var hoverRule = '#' + pickerElem.id + ':hover{cursor:pointer;}';
+  //   addRuleCSS(hoverRule);
 
-    var pickerPosDiv = document.createElement('div');
-    containerElement.appendChild(pickerPosDiv);
-    s = pickerPosDiv.style;
-    s.position = 'absolute';
-    s.width = '100%';
+  //   $(pickerElem).spectrum({
+  //     color: '#' + colorHex,
+  //     showButtons: false,
+  //     clickoutFiresChange: true,
+  //     change: function(newColor) {
+  //       colorHex = newColor.toHex();
+  //       pickerElem.setAttribute('fill', '#' + colorHex);
+  //     },
+  //     hide: function(color) {},
+  //     show: function(color) {}
+  //   });
+  // }
 
-    var pickerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    pickerSvg.id = 'wb-overlay-color-picker-svg';
-    // pickerSvg.setAttribute('height', '30');
-    // pickerSvg.setAttribute('width', '30');
-    pickerPosDiv.appendChild(pickerSvg);
-    s = pickerSvg.style;
-    s.height = '30px';
-    s.width = '30px';
-    s.display = 'block';
-    s.margin = '0 auto';
-    s.top = '35px';
-    s.position = 'relative';
-    s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
+  // function initPickerElement() {
+  //   var s;
+  //   colorHex = DEFAULT_COLORHEX;
 
-    pickerShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    pickerShape.id = 'wb-overlay-color-picker-shape';
-    pickerShape.setAttribute('cx', '15');
-    pickerShape.setAttribute('cy', '15');
-    pickerShape.setAttribute('r', '15');
-    pickerShape.setAttribute('fill', '#' + colorHex);
-    pickerSvg.appendChild(pickerShape);
-    return pickerShape;
-  }
+  //   var pickerPosDiv = document.createElement('div');
+  //   containerElement.appendChild(pickerPosDiv);
+  //   s = pickerPosDiv.style;
+  //   s.position = 'absolute';
+  //   s.width = '100%';
+
+  //   var pickerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  //   pickerSvg.id = 'wb-overlay-color-picker-svg';
+  //   // pickerSvg.setAttribute('height', '30');
+  //   // pickerSvg.setAttribute('width', '30');
+  //   pickerPosDiv.appendChild(pickerSvg);
+  //   s = pickerSvg.style;
+  //   s.height = '30px';
+  //   s.width = '30px';
+  //   s.display = 'block';
+  //   s.margin = '0 auto';
+  //   s.top = '35px';
+  //   s.position = 'relative';
+  //   s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
+
+  //   pickerShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  //   pickerShape.id = 'wb-overlay-color-picker-shape';
+  //   pickerShape.setAttribute('cx', '15');
+  //   pickerShape.setAttribute('cy', '15');
+  //   pickerShape.setAttribute('r', '15');
+  //   pickerShape.setAttribute('fill', '#' + colorHex);
+  //   pickerSvg.appendChild(pickerShape);
+  //   return pickerShape;
+  // }
 
   function initUserCount() {
     var s;
