@@ -48,9 +48,9 @@ var createWhiteboard = function(containerElement) {
   // ---------------- events
 
   function initEventHandlers() {
-    containerElement.addEventListener('mousedown', handleMousePress, true);
-    containerElement.addEventListener('mousemove', handleMouseMove, true);
-    containerElement.addEventListener('mouseup', handleMouseRelease, true);
+    containerElement.onmousedown = handleMousePress;
+    containerElement.onmousemove = handleMouseMove;
+    containerElement.onmouseup = handleMouseRelease;
 
     containerElement.addEventListener('touchstart', handleTouch, true);
     containerElement.addEventListener('touchmove', handleTouch, true);
@@ -489,8 +489,8 @@ var createWhiteboard = function(containerElement) {
   // ---------------- utility
 
   function fitCanvasToContainer(canvas) {
-    canvas.width = containerElement.offsetWidth;
-    canvas.height = containerElement.offsetHeight;
+    canvas.width = containerElement.clientWidth;
+    canvas.height = containerElement.clientHeight;
   }
 
   function getZIndex(element) {
