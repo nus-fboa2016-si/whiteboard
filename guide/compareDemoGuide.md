@@ -13,4 +13,5 @@
 | Resize event rate throttled                               |       | X    |
 | Server maintains history of strokes                       |       | X    |
 | JS plugin (spawn board at any element)                    |       | X    |
-| Format self with respect to parent node                   |       | X    |
+| Whiteboard fills parent container                         |       | X    |
+| Compatibility with older versions of chrome and firefox   |       | X    |

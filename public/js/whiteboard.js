@@ -108,10 +108,10 @@ var createWhiteboard = function(containerElement) {
   function handleMousePress(e) {
     e.preventDefault();
     // Compatibility fix for firefox
-    var xpos = e.offsetX === undefined
-      ? (e.originalEvent === undefined ? e.layerX : e.originalEvent.layerX) : e.offsetX;
-    var ypos = e.offsetY === undefined
-      ? (e.originalEvent === undefined ? e.layerY : e.originalEvent.layerY) : e.offsetY;
+    var xpos = e.offsetX === undefined ?
+        (e.originalEvent === undefined ? e.layerX : e.originalEvent.layerX) : e.offsetX;
+    var ypos = e.offsetY === undefined ?
+        (e.originalEvent === undefined ? e.layerY : e.originalEvent.layerY) : e.offsetY;
     var targetPagePos = getPagePosition(e.target);
     var containerPagePos = getPagePosition(containerElement);
     var x = xpos + targetPagePos.x - containerPagePos.x;
