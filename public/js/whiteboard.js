@@ -318,6 +318,7 @@ var createWhiteboard = function(containerElement) {
   function initDrawLayer() {
     drawCanvas = document.createElement('canvas');
     drawCanvas.id = 'wb-draw-layer-canvas';
+    drawCanvas.textContent = 'HTTP Canvas not supported :(';
     containerElement.appendChild(drawCanvas);
     fitCanvasToContainer(drawCanvas);
 
