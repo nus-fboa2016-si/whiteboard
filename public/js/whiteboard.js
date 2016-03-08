@@ -86,15 +86,19 @@ var createWhiteboard = function(containerElement) {
       default:
         return;
     }
-    var simulatedMouseEvent = document.createEvent('MouseEvent');
-    simulatedMouseEvent.initMouseEvent(type, true, true, window, 1,
-      first.screenX, first.screenY,
-      first.clientX, first.clientY, false,
-      false, false, false, 0 /* left*/, null);
+    //var simulatedMouseEvent = document.createEvent('MouseEvent');
+    //simulatedMouseEvent.initMouseEvent(type, true, true, window, 1,
+    //  first.screenX, first.screenY,
+    //  first.clientX, first.clientY, false,
+    //  false, false, false, 0 /* left*/, null);
 
+    var simulatedMouseEvent = new MouseEvent(type, {
+      screenX: first.screenX,
+      screenY: first.screenY,
+      clientX: first.clientX,
+      clientY: first.clientY
+    });
     first.target.dispatchEvent(simulatedMouseEvent);
-    // Don't prevent default for color picker
-    // event.preventDefault();
   }
 
   function handleKeypress(e) {
