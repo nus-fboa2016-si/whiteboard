@@ -20,16 +20,11 @@ app.use(express.static('public'));
 app.use('/guide', express.static('guide'));
 
 io.on('connection', function(socket) {
+
   numConnected++;
   console.log('connected: ' + numConnected);
-
   io.emit('user count', numConnected);
 
-  // send buffered lines to client
-  console.log('buffered draw line for new user');
-  // for (var i = drawingBuffer.length - 1; i >= 0; i--) {
-  //   socket.emit('draw line', drawingBuffer[i]);
-  // }
   socket.emit('buffered lines', drawingBuffer);
 
   socket.on('disconnect', function() {
@@ -41,10 +36,6 @@ io.on('connection', function(socket) {
   socket.on('draw line', function(line) {
     addToBuffer(line);
     socket.broadcast.emit('draw line', line);
-  });
-
-  socket.on('get user count', function() {
-    socket.emit('user count', numConnected);
   });
 });
 

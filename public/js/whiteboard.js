@@ -306,7 +306,6 @@ var createWhiteboard = function(containerElement) {
     uCountSVG.appendChild(uCountSVGText);
 
     socket.on('user count', updateUserCount);
-    socket.emit('get user count');
   }
 
   function updateUserCount(newCount) {
