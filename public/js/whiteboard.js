@@ -5,20 +5,17 @@ var createWhiteboard = function(containerElement) {
 
   var mouse2dPosTracker; // relative to container
 
-  //var DRAW_LAYER_RELATIVE_Z = 0; // bottom layer
   var drawCanvas, drawCtx,
     colorHex, penSize, // colorHex is a hex string
     cacheCanvas, cacheCtx, // hidden, used to redraw canvas on resize
     isDrawing;
 
-  //var GFX_LAYER_RELATIVE_Z = 1; // middle layer
   var camera, scene, renderer,
     clock, tick,
     particleSystem,
     spawnerOpts,
     unanimatedLines;
 
-  //var OVERLAY_RELATIVE_Z = 2; // top layer
   var pickerShape,
     uCountSVGText;
 
@@ -39,7 +36,6 @@ var createWhiteboard = function(containerElement) {
   initEventHandlers();
 
   function recordContainerDimensions() {
-    //containerZ = getZIndex(containerElement);
     prevContainerWidth = containerElement.offsetWidth;
     prevContainerHeight = containerElement.offsetHeight;
   }
@@ -85,11 +81,6 @@ var createWhiteboard = function(containerElement) {
       default:
         return;
     }
-    //var simulatedMouseEvent = document.createEvent('MouseEvent');
-    //simulatedMouseEvent.initMouseEvent(type, true, true, window, 1,
-    //  first.screenX, first.screenY,
-    //  first.clientX, first.clientY, false,
-    //  false, false, false, 0 /* left*/, null);
 
     var simulatedMouseEvent = new MouseEvent(type, {
       screenX: first.screenX,
@@ -270,7 +261,6 @@ var createWhiteboard = function(containerElement) {
     s.margin = '0 auto';
     s.top = '35px';
     s.position = 'relative';
-    //s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
 
     pickerShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     pickerShape.id = 'wb-overlay-color-picker-shape';
@@ -293,7 +283,6 @@ var createWhiteboard = function(containerElement) {
     s.position = 'absolute';
     s.left = '10px';
     s.bottom = '10px';
-    //s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
     containerElement.appendChild(uCountSVG);
 
     uCountSVGText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -328,7 +317,6 @@ var createWhiteboard = function(containerElement) {
     fitCanvasToContainer(drawCanvas);
 
     drawCanvas.style.position = 'absolute';
-    //drawCanvas.style.zIndex = containerZ + DRAW_LAYER_RELATIVE_Z;
 
     drawCtx = drawCanvas.getContext('2d');
     drawCtx.lineCap = 'round';
@@ -423,7 +411,6 @@ var createWhiteboard = function(containerElement) {
     fitCanvasToContainer(renderer.domElement);
     renderer.domElement.id = 'wb-gfx-layer-canvas';
 
-    //renderer.domElement.style.zIndex = containerZ + GFX_LAYER_RELATIVE_Z;
     renderer.domElement.style.position = 'absolute';
 
     spawnerOpts = {
@@ -497,15 +484,6 @@ var createWhiteboard = function(containerElement) {
     canvas.width = containerElement.clientWidth;
     canvas.height = containerElement.clientHeight;
   }
-
-  //function getZIndex(element) {
-  //  var z = window.document.defaultView.getComputedStyle(element).getPropertyValue('z-index');
-  //  if (element.nodeName === 'BODY') return 0;
-  //  if (isNaN(z)) {
-  //    return getZIndex(element.parentNode);
-  //  }
-  //  return z;
-  //}
 
   function getPagePosition(element) {
     var clientRect = element.getBoundingClientRect();
