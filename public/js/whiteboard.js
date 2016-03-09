@@ -200,7 +200,8 @@ var createWhiteboard = function(containerElement) {
 
   function initColorPicker() {
     var pickerElem = initPickerElement();
-    var hoverRule = 'circle.' + pickerElem.className + ':hover{cursor:pointer;}';
+    console.log(pickerElem);
+    var hoverRule = 'circle.' + pickerElem.getAttribute('class') + ':hover{cursor:pointer;}';
     addRuleCSS(hoverRule);
 
     $(pickerElem).spectrum({
@@ -227,7 +228,7 @@ var createWhiteboard = function(containerElement) {
     s.width = '100%';
 
     var pickerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    pickerSvg.className = 'wb-overlay-color-picker-svg';
+    pickerSvg.setAttribute('class', 'wb-overlay-color-picker-svg');
     pickerPosDiv.appendChild(pickerSvg);
     s = pickerSvg.style;
     s.height = '30px';
@@ -238,7 +239,7 @@ var createWhiteboard = function(containerElement) {
     s.position = 'relative';
 
     pickerShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    pickerShape.className = 'wb-overlay-color-picker-shape';
+    pickerShape.setAttribute('class', 'wb-overlay-color-picker-shape');
     pickerShape.setAttribute('cx', '15');
     pickerShape.setAttribute('cy', '15');
     pickerShape.setAttribute('r', '15');
@@ -251,7 +252,7 @@ var createWhiteboard = function(containerElement) {
     var s;
 
     var uCountSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    uCountSVG.className = 'wb-overlay-usercount-svg';
+    uCountSVG.setAttribute('class', 'wb-overlay-usercount-svg');
     s = uCountSVG.style;
     s.width = '100%';
     s.height = '30px';
@@ -261,7 +262,7 @@ var createWhiteboard = function(containerElement) {
     containerElement.appendChild(uCountSVG);
 
     uCountSVGText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    uCountSVGText.className = 'wb-overlay-usercount-text';
+    uCountSVGText.setAttribute('class', 'wb-overlay-usercount-text');
     uCountSVGText.textContent = 'Loading user count...';
     uCountSVGText.setAttribute('x', '0');
     uCountSVGText.setAttribute('y', '30');
