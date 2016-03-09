@@ -1,5 +1,7 @@
 var socket = io();
 
+// whiteboard ------------------------------------------
+
 // size the whiteboard to parent container
 var container = document.getElementById('whiteboard-container');
 var wb = container.querySelector('#whiteboard');
@@ -17,7 +19,8 @@ ctx.lineWidth = 2;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
-// event handlers
+// event handlers --------------------------------------
+
 container.onmousedown = function(e){
   e.preventDefault();
   isDrawing = true;
@@ -57,11 +60,15 @@ function drawLine(line) {
   ctx.stroke();
 }
 
+// user count ------------------------------------------
+
 socket.on('user count', updateUserCount);
 var userCountText = container.querySelector('text.user-count');
 function updateUserCount(count) {
   userCountText.textContent = 'CONNECTED: ' + count;
 }
+
+// color picker ----------------------------------------
 
 var colorPickerWrapper = container.querySelector('.color-picker-wrapper');
 var colorPickerInput = colorPickerWrapper.querySelector('input.color-picker');
