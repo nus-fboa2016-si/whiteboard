@@ -1,23 +1,21 @@
+var socket = io();
+
 // size the whiteboard to parent container
-var wb = document.getElementById('whiteboard');
 var container = document.getElementById('whiteboard-container');
+var wb = container.querySelector('#whiteboard');
 wb.height = container.clientHeight;
 wb.width = container.clientWidth;
-
-// set stroke style
-var ctx = wb.getContext('2d');
-ctx.strokeStyle = '#ffffff';
-ctx.lineWidth = 2;
-ctx.lineCap = 'round';
-ctx.lineJoin = 'round';
-
-var svgText = container.querySelector('text.user-count');
 
 var isDrawing = false;
 var prevX = null;
 var prevY = null;
 
-var socket = io();
+// set stroke style
+var ctx = wb.getContext('2d');
+ctx.strokeStyle = '#aa88ff';
+ctx.lineWidth = 2;
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
 
 // event handlers
 container.onmousedown = function(e){
@@ -50,8 +48,6 @@ container.onmouseup = function(e){
 };
 
 socket.on('draw line', drawLine);
-socket.on('user count', updateUserCount);
-
 function drawLine(line) {
   ctx.beginPath();
   ctx.moveTo(line.startX, line.startY);
@@ -59,6 +55,8 @@ function drawLine(line) {
   ctx.stroke();
 }
 
+socket.on('user count', updateUserCount);
+var userCountText = container.querySelector('text.user-count');
 function updateUserCount(count) {
-  svgText.textContent = 'CONNECTED: ' + count;
+  userCountText.textContent = 'CONNECTED: ' + count;
 }

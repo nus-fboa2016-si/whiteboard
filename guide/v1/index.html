@@ -23,21 +23,21 @@
 
   <script>
     // size the whiteboard to parent container
-    var wb = document.getElementById('whiteboard');
     var container = document.getElementById('whiteboard-container');
+    var wb = container.querySelector('#whiteboard');
     wb.height = container.clientHeight;
     wb.width = container.clientWidth;
-
-    // set stroke style
-    var ctx = wb.getContext('2d');
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
 
     var isDrawing = false;
     var prevX = null;
     var prevY = null;
+
+    // set stroke style
+    var ctx = wb.getContext('2d');
+    ctx.strokeStyle = '#aa88ff';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
     // event handlers
     container.onmousedown = function(e){
