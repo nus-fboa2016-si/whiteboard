@@ -3,10 +3,10 @@ var createWhiteboard = function(containerElement) {
 
   var socket;
 
-  var mouse2dPosTracker; // relative to container
+  var prevX, prevY;
 
   var drawCanvas, drawCtx,
-    colorHex, penSize, // colorHex is a hex string
+    colorString, penSize, // colorString is a DOM color string
     cacheCanvas, cacheCtx, // hidden, used to redraw canvas on resize
     isDrawing;
 
@@ -19,14 +19,13 @@ var createWhiteboard = function(containerElement) {
   var pickerShape,
     uCountSVGText;
 
-  var DEFAULT_COLORHEX = 'aa88ff'; // alternatively, 0xffffff
+  var DEFAULT_COLOR = '#aa88ff'; // alternatively, 0xffffff
 
   // ---------------- end shared var declarations
 
   socket = io(); // WAOW! AMAZING!
 
   recordContainerDimensions();
-  initPosTrackers();
 
   initDrawLayer();
   initGFXLayer();
@@ -103,45 +102,30 @@ var createWhiteboard = function(containerElement) {
 
   function handleMousePress(e) {
     e.preventDefault();
-    // Compatibility fix for firefox
-    var xpos = e.offsetX === undefined ?
-        (e.originalEvent === undefined ? e.layerX : e.originalEvent.layerX) : e.offsetX;
-    var ypos = e.offsetY === undefined ?
-        (e.originalEvent === undefined ? e.layerY : e.originalEvent.layerY) : e.offsetY;
-    var targetPagePos = getPagePosition(e.target);
-    var containerPagePos = getPagePosition(containerElement);
-    var x = xpos + targetPagePos.x - containerPagePos.x;
-    var y = ypos + targetPagePos.y - containerPagePos.y;
-    updateTracker(mouse2dPosTracker, x, y);
+    var pos = getMouseEventContainerPos(e);
+    prevX = pos.x;
+    prevY = pos.y;
     isDrawing = true;
   }
 
   function handleMouseRelease() {
     isDrawing = false;
-    resetPosTrackers();
   }
 
   function handleMouseMove(e) {
     if (!isDrawing) return;
-    // Compatibility fix for firefox
-    var xpos = e.offsetX === undefined
-      ? (e.originalEvent === undefined ? e.layerX : e.originalEvent.layerX) : e.offsetX;
-    var ypos = e.offsetY === undefined
-      ? (e.originalEvent === undefined ? e.layerY : e.originalEvent.layerY) : e.offsetY;
-    var targetPagePos = getPagePosition(e.target);
-    var containerPagePos = getPagePosition(containerElement);
-    var x = xpos + targetPagePos.x - containerPagePos.x;
-    var y = ypos + targetPagePos.y - containerPagePos.y;
-    updateTracker(mouse2dPosTracker, x, y);
-    var newLine = {
-      startX: mouse2dPosTracker.prevX,
-      startY: mouse2dPosTracker.prevY,
-      endX: mouse2dPosTracker.newX,
-      endY: mouse2dPosTracker.newY,
-      width: penSize,
-      colorHex: colorHex
-    };
 
+    var pos = getMouseEventContainerPos(e);
+    var newLine = {
+      startX: prevX,
+      startY: prevY,
+      endX: pos.x,
+      endY: pos.y,
+      width: penSize,
+      colorString: colorString
+    };
+    prevX = pos.x;
+    prevY = pos.y;
     drawLine(newLine);
     unanimatedLines.push(newLine);
     socket.emit('draw line', newLine);
@@ -163,7 +147,6 @@ var createWhiteboard = function(containerElement) {
    */
   function createThrottledResizeHandler(targetRate) {
     var resizeTimeout = null; // closure var to track and control resize rate
-
     return function() {
       if (resizeTimeout != null) return; // resize control timer has not cooled down
       resizeTimeout = setTimeout(
@@ -193,27 +176,18 @@ var createWhiteboard = function(containerElement) {
     recordContainerDimensions();
   }
 
-  // ---------------- coordinate trackers
-
-  function initPosTrackers() {
-    mouse2dPosTracker = {};
-    resetPosTrackers();
-  }
-
-  function resetPosTrackers() {
-    var m = mouse2dPosTracker;
-    m.newX =
-      m.newY =
-      m.prevX =
-      m.prevY =
-      null;
-  }
-
-  function updateTracker(tracker, x, y) {
-    tracker.prevX = tracker.newX === null ? x : tracker.newX;
-    tracker.prevY = tracker.newY === null ? y : tracker.newY;
-    tracker.newX = x;
-    tracker.newY = y;
+  function getMouseEventContainerPos(e) {
+    // FF <39 fix
+    var offsetX = e.offsetX === undefined
+        ? (e.originalEvent === undefined ? e.layerX : e.originalEvent.layerX) : e.offsetX;
+    var offsetY = e.offsetY === undefined
+        ? (e.originalEvent === undefined ? e.layerY : e.originalEvent.layerY) : e.offsetY;
+    var targetPagePos = getPagePosition(e.target);
+    var containerPagePos = getPagePosition(containerElement);
+    return {
+      x: offsetX + targetPagePos.x - containerPagePos.x,
+      y: offsetY + targetPagePos.y - containerPagePos.y
+    };
   }
 
   // ---------------- overlay (color picker, connection count etc)
@@ -229,12 +203,12 @@ var createWhiteboard = function(containerElement) {
     addRuleCSS(hoverRule);
 
     $(pickerElem).spectrum({
-      color: '#' + colorHex,
+      color: colorString,
       showButtons: false,
       clickoutFiresChange: true,
       change: function(newColor) {
-        colorHex = newColor.toHex();
-        pickerElem.setAttribute('fill', '#' + colorHex);
+        colorString = '#' + newColor.toHex();
+        pickerElem.setAttribute('fill', colorString);
       },
       hide: function(color) {},
       show: function(color) {}
@@ -243,7 +217,7 @@ var createWhiteboard = function(containerElement) {
 
   function initPickerElement() {
     var s;
-    colorHex = DEFAULT_COLORHEX;
+    colorString = DEFAULT_COLOR;
 
     var pickerPosDiv = document.createElement('div');
     containerElement.appendChild(pickerPosDiv);
@@ -267,7 +241,7 @@ var createWhiteboard = function(containerElement) {
     pickerShape.setAttribute('cx', '15');
     pickerShape.setAttribute('cy', '15');
     pickerShape.setAttribute('r', '15');
-    pickerShape.setAttribute('fill', '#' + colorHex);
+    pickerShape.setAttribute('fill', colorString);
     pickerSvg.appendChild(pickerShape);
     return pickerShape;
   }
@@ -322,7 +296,7 @@ var createWhiteboard = function(containerElement) {
     drawCtx.lineCap = 'round';
     drawCtx.lineJoin = 'round';
 
-    colorHex = DEFAULT_COLORHEX;
+    colorString = DEFAULT_COLOR;
     penSize = 2;
     isDrawing = false;
 
@@ -351,7 +325,7 @@ var createWhiteboard = function(containerElement) {
   }
 
   function drawLineTo2dCtx(line, ctx) {
-    ctx.strokeStyle = '#' + line.colorHex;
+    ctx.strokeStyle = line.colorString;
     ctx.lineWidth = line.width;
     ctx.beginPath();
     ctx.moveTo(line.startX, line.startY);
@@ -449,7 +423,7 @@ var createWhiteboard = function(containerElement) {
         positionRandomness: 0.5,
         velocity: new THREE.Vector3(),
         velocityRandomness: 0.5,
-        color: parseInt(line.colorHex, 16),
+        color: parseInt(line.colorString.substr(1), 16),
         colorRandomness: 0.2,
         turbulence: 0.4,
         lifetime: 0.8,
@@ -465,7 +439,6 @@ var createWhiteboard = function(containerElement) {
         (x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1,
         0.5
     );
-
     vector.unproject(camera);
 
     var dir = vector.sub(camera.position).normalize();
