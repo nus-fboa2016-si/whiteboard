@@ -12,6 +12,23 @@
     #whiteboard-container {
       height: 100vh;
       width: 100vw;
+      position: absolute;
+    }
+    #whiteboard-container > svg.user-count {
+      height: 30px;
+      width: 100%;
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+    }
+    #whiteboard-container > svg > text.user-count {
+      fill: #00D5B0;
+      stroke: #000000;
+      stroke-width: 1.5px;
+      font-size: 24px;
+      font-family: sans-serif;
+      font-weight: bold;
+      text-anchor: start;
     }
   </style>
 </head>
@@ -19,45 +36,12 @@
 <body>
   <div id="whiteboard-container">
     <canvas id="whiteboard">Canvas not supported :(</canvas>
+    <svg height="30px" width="100%" class="user-count">
+      <text x="0" y="30" class="user-count">Loading user count...</text>
+    </svg>
   </div>
 
-  <script>
-    // size the whiteboard to parent container
-    var wb = document.getElementById('whiteboard');
-    var container = document.getElementById('whiteboard-container');
-    wb.height = container.clientHeight;
-    wb.width = container.clientWidth;
-
-    // set stroke style
-    var ctx = wb.getContext('2d');
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    var isDrawing = false;
-    var prevX = null;
-    var prevY = null;
-
-    // event handlers
-    wb.onmousedown = function(e){
-      isDrawing = true;
-      prevX = e.offsetX;
-      prevY = e.offsetY;
-    };
-    wb.onmousemove = function(e){
-      if (!isDrawing) return;
-      ctx.beginPath();
-      ctx.moveTo(prevX, prevY);
-      ctx.lineTo(e.offsetX, e.offsetY);
-      ctx.stroke();
-      prevX = e.offsetX;
-      prevY = e.offsetY;
-    };
-    wb.onmouseup = function(e){
-      isDrawing = false;
-      prevX = prevY = null;
-    };
-  </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/whiteboard.js"></script>
 </body>
 </html>

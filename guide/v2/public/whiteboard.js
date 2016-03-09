@@ -11,26 +11,54 @@ ctx.lineWidth = 2;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
+var svgText = container.querySelector('text.user-count');
+
 var isDrawing = false;
 var prevX = null;
 var prevY = null;
 
+var socket = io();
+
 // event handlers
-wb.onmousedown = function(e){
+container.onmousedown = function(e){
+  e.preventDefault();
   isDrawing = true;
-  prevX = e.offsetX;
-  prevY = e.offsetY;
+  var x = e.offsetX + e.target.getBoundingClientRect().left - container.getBoundingClientRect().left;
+  var y = e.offsetY + e.target.getBoundingClientRect().top - container.getBoundingClientRect().top;
+  prevX = x;
+  prevY = y;
 };
-wb.onmousemove = function(e){
+
+container.onmousemove = function(e){
   if (!isDrawing) return;
-  ctx.beginPath();
-  ctx.moveTo(prevX, prevY);
-  ctx.lineTo(e.offsetX, e.offsetY);
-  ctx.stroke();
-  prevX = e.offsetX;
-  prevY = e.offsetY;
+  var x = e.offsetX + e.target.getBoundingClientRect().left - container.getBoundingClientRect().left;
+  var y = e.offsetY + e.target.getBoundingClientRect().top - container.getBoundingClientRect().top;
+  var newLine = {
+    startX: prevX,
+    startY: prevY,
+    endX: x,
+    endY: y
+  };
+  drawLine(newLine);
+  socket.emit('draw line', newLine);
+  prevX = x;
+  prevY = y;
 };
-wb.onmouseup = function(e){
+
+container.onmouseup = function(e){
   isDrawing = false;
-  prevX = prevY = null;
 };
+
+socket.on('draw line', drawLine);
+socket.on('user count', updateUserCount);
+
+function drawLine(line) {
+  ctx.beginPath();
+  ctx.moveTo(line.startX, line.startY);
+  ctx.lineTo(line.endX, line.endY);
+  ctx.stroke();
+}
+
+function updateUserCount(count) {
+  svgText.textContent = 'CONNECTED: ' + count;
+}

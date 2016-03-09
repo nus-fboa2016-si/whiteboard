@@ -40,12 +40,12 @@
     var prevY = null;
 
     // event handlers
-    wb.onmousedown = function(e){
+    container.onmousedown = function(e){
       isDrawing = true;
       prevX = e.offsetX;
       prevY = e.offsetY;
     };
-    wb.onmousemove = function(e){
+    container.onmousemove = function(e){
       if (!isDrawing) return;
       ctx.beginPath();
       ctx.moveTo(prevX, prevY);
@@ -54,9 +54,8 @@
       prevX = e.offsetX;
       prevY = e.offsetY;
     };
-    wb.onmouseup = function(e){
+    container.onmouseup = function(e){
       isDrawing = false;
-      prevX = prevY = null;
     };
   </script>
 </body>
