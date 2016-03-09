@@ -21,7 +21,10 @@
     "type": "git",
     "url": "git@github.com:nus-fboa2016-si/whiteboard.git"
   },
-  "author": "paradite",
+  "contributors": [
+    "Zhu Liang <zhuliangg11@gmail.com> (https://github.com/paradite)",
+    "Leow Yijin <leowyijin@gmail.com> (https://github.com/YijinL)"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/nus-fboa2016-si/whiteboard/issues"
