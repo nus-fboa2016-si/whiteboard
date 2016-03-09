@@ -1,25 +1,24 @@
 var createWhiteboard = function(containerElement) {
-  var containerZ,
-    prevContainerWidth, prevContainerHeight;
+  var prevContainerWidth, prevContainerHeight;
 
   var socket;
 
   var mouse2dPosTracker; // relative to container
 
-  var DRAW_LAYER_RELATIVE_Z = 0; // bottom layer
+  //var DRAW_LAYER_RELATIVE_Z = 0; // bottom layer
   var drawCanvas, drawCtx,
     colorHex, penSize, // colorHex is a hex string
     cacheCanvas, cacheCtx, // hidden, used to redraw canvas on resize
     isDrawing;
 
-  var GFX_LAYER_RELATIVE_Z = 1; // middle layer
+  //var GFX_LAYER_RELATIVE_Z = 1; // middle layer
   var camera, scene, renderer,
     clock, tick,
     particleSystem,
     spawnerOpts,
     unanimatedLines;
 
-  var OVERLAY_RELATIVE_Z = 2; // top layer
+  //var OVERLAY_RELATIVE_Z = 2; // top layer
   var pickerShape,
     uCountSVGText;
 
@@ -40,7 +39,7 @@ var createWhiteboard = function(containerElement) {
   initEventHandlers();
 
   function recordContainerDimensions() {
-    containerZ = getZIndex(containerElement);
+    //containerZ = getZIndex(containerElement);
     prevContainerWidth = containerElement.offsetWidth;
     prevContainerHeight = containerElement.offsetHeight;
   }
@@ -263,8 +262,6 @@ var createWhiteboard = function(containerElement) {
 
     var pickerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     pickerSvg.id = 'wb-overlay-color-picker-svg';
-    // pickerSvg.setAttribute('height', '30');
-    // pickerSvg.setAttribute('width', '30');
     pickerPosDiv.appendChild(pickerSvg);
     s = pickerSvg.style;
     s.height = '30px';
@@ -273,7 +270,7 @@ var createWhiteboard = function(containerElement) {
     s.margin = '0 auto';
     s.top = '35px';
     s.position = 'relative';
-    s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
+    //s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
 
     pickerShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     pickerShape.id = 'wb-overlay-color-picker-shape';
@@ -296,7 +293,7 @@ var createWhiteboard = function(containerElement) {
     s.position = 'absolute';
     s.left = '10px';
     s.bottom = '10px';
-    s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
+    //s.zIndex = containerZ + OVERLAY_RELATIVE_Z;
     containerElement.appendChild(uCountSVG);
 
     uCountSVGText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -331,7 +328,7 @@ var createWhiteboard = function(containerElement) {
     fitCanvasToContainer(drawCanvas);
 
     drawCanvas.style.position = 'absolute';
-    drawCanvas.style.zIndex = containerZ + DRAW_LAYER_RELATIVE_Z;
+    //drawCanvas.style.zIndex = containerZ + DRAW_LAYER_RELATIVE_Z;
 
     drawCtx = drawCanvas.getContext('2d');
     drawCtx.lineCap = 'round';
@@ -426,7 +423,7 @@ var createWhiteboard = function(containerElement) {
     fitCanvasToContainer(renderer.domElement);
     renderer.domElement.id = 'wb-gfx-layer-canvas';
 
-    renderer.domElement.style.zIndex = containerZ + GFX_LAYER_RELATIVE_Z;
+    //renderer.domElement.style.zIndex = containerZ + GFX_LAYER_RELATIVE_Z;
     renderer.domElement.style.position = 'absolute';
 
     spawnerOpts = {
@@ -501,14 +498,14 @@ var createWhiteboard = function(containerElement) {
     canvas.height = containerElement.clientHeight;
   }
 
-  function getZIndex(element) {
-    var z = window.document.defaultView.getComputedStyle(element).getPropertyValue('z-index');
-    if (element.nodeName === 'BODY') return 0;
-    if (isNaN(z)) {
-      return getZIndex(element.parentNode);
-    }
-    return z;
-  }
+  //function getZIndex(element) {
+  //  var z = window.document.defaultView.getComputedStyle(element).getPropertyValue('z-index');
+  //  if (element.nodeName === 'BODY') return 0;
+  //  if (isNaN(z)) {
+  //    return getZIndex(element.parentNode);
+  //  }
+  //  return z;
+  //}
 
   function getPagePosition(element) {
     var clientRect = element.getBoundingClientRect();
