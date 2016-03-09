@@ -200,7 +200,7 @@ var createWhiteboard = function(containerElement) {
 
   function initColorPicker() {
     var pickerElem = initPickerElement();
-    var hoverRule = '#' + pickerElem.id + ':hover{cursor:pointer;}';
+    var hoverRule = 'circle.' + pickerElem.className + ':hover{cursor:pointer;}';
     addRuleCSS(hoverRule);
 
     $(pickerElem).spectrum({
@@ -227,18 +227,18 @@ var createWhiteboard = function(containerElement) {
     s.width = '100%';
 
     var pickerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    pickerSvg.id = 'wb-overlay-color-picker-svg';
+    pickerSvg.className = 'wb-overlay-color-picker-svg';
     pickerPosDiv.appendChild(pickerSvg);
     s = pickerSvg.style;
     s.height = '30px';
     s.width = '30px';
     s.display = 'block';
     s.margin = '0 auto';
-    s.top = '35px';
+    s.top = '20px';
     s.position = 'relative';
 
     pickerShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    pickerShape.id = 'wb-overlay-color-picker-shape';
+    pickerShape.className = 'wb-overlay-color-picker-shape';
     pickerShape.setAttribute('cx', '15');
     pickerShape.setAttribute('cy', '15');
     pickerShape.setAttribute('r', '15');
@@ -251,7 +251,7 @@ var createWhiteboard = function(containerElement) {
     var s;
 
     var uCountSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    uCountSVG.id = 'wb-overlay-usercount-svg';
+    uCountSVG.className = 'wb-overlay-usercount-svg';
     s = uCountSVG.style;
     s.width = '100%';
     s.height = '30px';
@@ -261,7 +261,7 @@ var createWhiteboard = function(containerElement) {
     containerElement.appendChild(uCountSVG);
 
     uCountSVGText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    uCountSVGText.id = 'wb-overlay-usercount-text';
+    uCountSVGText.className = 'wb-overlay-usercount-text';
     uCountSVGText.textContent = 'Loading user count...';
     uCountSVGText.setAttribute('x', '0');
     uCountSVGText.setAttribute('y', '30');
@@ -286,7 +286,7 @@ var createWhiteboard = function(containerElement) {
 
   function initDrawLayer() {
     drawCanvas = document.createElement('canvas');
-    drawCanvas.id = 'wb-draw-layer-canvas';
+    drawCanvas.className = 'wb-draw-layer-canvas';
     drawCanvas.textContent = 'HTTP Canvas not supported :(';
     containerElement.appendChild(drawCanvas);
     fitCanvasToContainer(drawCanvas);
@@ -376,8 +376,11 @@ var createWhiteboard = function(containerElement) {
       antialias: true,
       alpha: true
     });
+    renderer.domElement.className = 'wb-gfx-layer-canvas';
+    renderer.domElement.style.position = 'absolute';
     renderer.setSize(containerElement.offsetWidth, containerElement.offsetHeight);
     renderer.setClearColor(0x000000, 0);
+    containerElement.appendChild(renderer.domElement);
 
     // See THREE.js github gpuparticle example
     particleSystem = new THREE.GPUParticleSystem({
@@ -385,11 +388,6 @@ var createWhiteboard = function(containerElement) {
     });
     scene = new THREE.Scene();
     scene.add(particleSystem);
-
-    containerElement.appendChild(renderer.domElement);
-    fitCanvasToContainer(renderer.domElement);
-    renderer.domElement.id = 'wb-gfx-layer-canvas';
-    renderer.domElement.style.position = 'absolute';
 
     spawnerOpts = {
       spawnRate: 3000,
