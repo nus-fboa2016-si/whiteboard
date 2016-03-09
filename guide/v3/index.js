@@ -5,10 +5,6 @@ var io = require('socket.io')(http);
 
 var userCount = 0;
 
-//app.get('/', function(req, res){
-//  res.sendFile('index.html', {root: __dirname});
-//});
-
 app.use(express.static('public'));
 
 io.on('connection', function(socket){
