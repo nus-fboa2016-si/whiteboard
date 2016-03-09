@@ -1,7 +1,7 @@
 | Feature                                                   | Guide | Demo |
 | --------------------------------------------------------- | ----: | ---: |
 | Base 2d canvas whiteboard                                 | X     | X    |
-| Clear local whiteboard functionality                      | X     
+| Clear local whiteboard functionality                      | X     |      |
 | Color Picker                                              | X     | X    |
 | Starting color randomised                                 |       | X    |
 | Connected user count                                      | X     | X    |

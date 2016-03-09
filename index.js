@@ -17,7 +17,7 @@ function addToBuffer(line) {
 }
 
 app.use(express.static('public'));
-app.use('/guide', express.static('guide'));
+app.use(express.static('guide'));
 
 io.on('connection', function(socket) {
 
