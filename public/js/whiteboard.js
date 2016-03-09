@@ -96,8 +96,10 @@ var createWhiteboard = function(containerElement) {
       screenX: first.screenX,
       screenY: first.screenY,
       clientX: first.clientX,
-      clientY: first.clientY
+      clientY: first.clientY,
+      bubbles: true
     });
+    console.log(simulatedMouseEvent);
     first.target.dispatchEvent(simulatedMouseEvent);
   }
 
@@ -306,7 +308,7 @@ var createWhiteboard = function(containerElement) {
     s.textAnchor = 'start';
     s.fill = '#00D5B0';
     s.stroke = '#000000';
-    s.strokeWidth = '2px';
+    s.strokeWidth = '1.5px';
     s.fontSize = '24px';
     s.fontFamily = 'sans-serif';
     s.fontWeight = 'bold';
