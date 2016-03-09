@@ -12,8 +12,7 @@ var createWhiteboard = function(containerElement) {
 
   var camera, scene, renderer,
     clock, tick,
-    particleSystem,
-    spawnerOpts,
+    particleSystem, spawnerOpts, particleOpts,
     unanimatedLines;
 
   var pickerShape,
@@ -44,7 +43,7 @@ var createWhiteboard = function(containerElement) {
   function initEventHandlers() {
     containerElement.onmousedown = handleMousePress;
     containerElement.onmousemove = handleMouseMove;
-    containerElement.onmouseup = handleMouseRelease;
+    document.onmouseup = handleMouseRelease;
 
     containerElement.addEventListener('touchstart', handleTouch, true);
     containerElement.addEventListener('touchmove', handleTouch, true);
@@ -52,7 +51,7 @@ var createWhiteboard = function(containerElement) {
     containerElement.addEventListener('touchcancel', handleTouch, true);
 
     // Detect mouse release outside the window
-    document.addEventListener('mouseup', handleMouseRelease, true);
+    //document.addEventListener('mouseup', handleMouseRelease, true);
     // Clear position when mouse outside window but continue drawing when come back
     document.onmouseout = handleMouseOut;
 
@@ -136,7 +135,9 @@ var createWhiteboard = function(containerElement) {
     var from = e.relatedTarget || e.toElement;
     if (!from || from.nodeName === 'HTML') {
       // handleMouseRelease();
-      resetPosTrackers();
+      var pos = getMouseEventContainerPos(e);
+      prevX = pos.x;
+      prevY = pos.y;
     }
   }
 
@@ -307,7 +308,7 @@ var createWhiteboard = function(containerElement) {
     socket.on('buffered lines', function(lines) {
       lines.forEach(drawLine);
     });
-    socket.on('draw line', function(line) {
+    socket.on('draw line', function(line){
       drawLine(line);
       unanimatedLines.push(line);
     });
@@ -364,7 +365,11 @@ var createWhiteboard = function(containerElement) {
     clock = new THREE.Clock(true);
     unanimatedLines = [];
 
-    camera = new THREE.PerspectiveCamera(28, containerElement.offsetWidth / containerElement.offsetHeight, 1, 10000);
+    camera = new THREE.PerspectiveCamera(
+        28,
+        containerElement.offsetWidth / containerElement.offsetHeight,
+        1,
+        10000);
     camera.position.z = 100;
 
     renderer = new THREE.WebGLRenderer({
@@ -384,14 +389,21 @@ var createWhiteboard = function(containerElement) {
     containerElement.appendChild(renderer.domElement);
     fitCanvasToContainer(renderer.domElement);
     renderer.domElement.id = 'wb-gfx-layer-canvas';
-
     renderer.domElement.style.position = 'absolute';
 
     spawnerOpts = {
       spawnRate: 3000,
-      horizontalSpeed: 0,
-      verticalSpeed: 0,
       timeScale: 1
+    };
+    particleOpts = {
+      positionRandomness: 0.5,
+      velocity: new THREE.Vector3(),
+      velocityRandomness: 0.5,
+      colorRandomness: 0.2,
+      turbulence: 0.4,
+      lifetime: 0.8,
+      size: 16,
+      sizeRandomness: 1
     };
   }
 
@@ -418,18 +430,9 @@ var createWhiteboard = function(containerElement) {
           line.startX * (1 - percent) + line.endX * percent,
           line.startY * (1 - percent) + line.endY * percent
       );
-      particleSystem.spawnParticle({
-        position: new THREE.Vector3(pos.x, pos.y, 0),
-        positionRandomness: 0.5,
-        velocity: new THREE.Vector3(),
-        velocityRandomness: 0.5,
-        color: parseInt(line.colorString.substr(1), 16),
-        colorRandomness: 0.2,
-        turbulence: 0.4,
-        lifetime: 0.8,
-        size: 16,
-        sizeRandomness: 1
-      });
+      particleOpts.color = parseInt(line.colorString.substr(1), 16);
+      particleOpts.position = new THREE.Vector3(pos.x, pos.y, 0);
+      particleSystem.spawnParticle(particleOpts);
     }
   }
 
