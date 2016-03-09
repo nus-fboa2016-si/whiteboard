@@ -4,7 +4,7 @@ var socket = io();
 
 // size the whiteboard to parent container
 var container = document.getElementById('whiteboard-container');
-var wb = container.querySelector('#whiteboard');
+var wb = container.querySelector('canvas.whiteboard');
 wb.height = container.clientHeight;
 wb.width = container.clientWidth;
 

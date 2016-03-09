@@ -18,13 +18,13 @@
 
 <body>
   <div id="whiteboard-container">
-    <canvas id="whiteboard">Canvas not supported :(</canvas>
+    <canvas class="whiteboard">Canvas not supported :(</canvas>
   </div>
 
   <script>
     // size the whiteboard to parent container
     var container = document.getElementById('whiteboard-container');
-    var wb = container.querySelector('#whiteboard');
+    var wb = container.querySelector('canvas.whiteboard');
     wb.height = container.clientHeight;
     wb.width = container.clientWidth;
 
