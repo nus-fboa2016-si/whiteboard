@@ -438,7 +438,7 @@ var createWhiteboard = function(containerElement) {
   function getWorldPosFromCameraPos(x, y) {
     var vector = new THREE.Vector3();
     vector.set(
-        (x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1,
+        (x / drawCanvas.width) * 2 - 1, -(y / drawCanvas.height) * 2 + 1,
         0.5
     );
     vector.unproject(camera);
