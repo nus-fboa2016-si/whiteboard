@@ -3,7 +3,7 @@ body {
   margin: 0px;
   overflow: hidden;
 }
-#whiteboard {
+#whiteboard-container canvas {
   position: absolute;
 }
 #whiteboard-container {
@@ -17,6 +17,7 @@ body {
   position: absolute;
   left: 10px;
   bottom: 10px;
+  cursor: default;
 }
 #whiteboard-container text.user-count {
   fill: #00D5B0;
