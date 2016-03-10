@@ -24,32 +24,48 @@ ctx.lineJoin = 'round';
 container.onmousedown = function(e){
   e.preventDefault();
   isDrawing = true;
-  var x = e.offsetX + e.target.getBoundingClientRect().left - container.getBoundingClientRect().left;
-  var y = e.offsetY + e.target.getBoundingClientRect().top - container.getBoundingClientRect().top;
-  prevX = x;
-  prevY = y;
+  var pos = getMouseEventContainerPos(e);
+  prevX = pos.x;
+  prevY = pos.y;
 };
 
 container.onmousemove = function(e){
   if (!isDrawing) return;
-  var x = e.offsetX + e.target.getBoundingClientRect().left - container.getBoundingClientRect().left;
-  var y = e.offsetY + e.target.getBoundingClientRect().top - container.getBoundingClientRect().top;
+  var pos = getMouseEventContainerPos(e);
   var newLine = {
     startX: prevX,
     startY: prevY,
-    endX: x,
-    endY: y,
+    endX: pos.x,
+    endY: pos.y,
     colorString: colorString
   };
   drawLine(newLine);
   socket.emit('draw line', newLine);
-  prevX = x;
-  prevY = y;
+  prevX = pos.x;
+  prevY = pos.y;
 };
 
-container.onmouseup = function(e){
+document.onmouseup = function(e){
   isDrawing = false;
 };
+
+document.onmouseout = function(e) {
+  e = e || window.event;
+  var from = e.relatedTarget || e.toElement;
+  if (!from || from.nodeName === 'HTML') {
+    // handleMouseRelease();
+    var pos = getMouseEventContainerPos(e);
+    prevX = pos.x;
+    prevY = pos.y;
+  }
+};
+
+function getMouseEventContainerPos(e) {
+  return {
+    x: e.offsetX + e.target.getBoundingClientRect().left - container.getBoundingClientRect().left,
+    y: e.offsetY + e.target.getBoundingClientRect().top - container.getBoundingClientRect().top
+  };
+}
 
 socket.on('draw line', drawLine);
 function drawLine(line) {

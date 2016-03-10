@@ -1,7 +1,7 @@
 | Feature                                                   | Guide | Demo |
 | --------------------------------------------------------- | ----: | ---: |
 | Base 2d canvas whiteboard                                 | X     | X    |
-| Clear local whiteboard functionality                      | X     |      |
+| Clear local whiteboard functionality                      | X     | X     |
 | Color Picker                                              | X     | X    |
 | Starting color randomised                                 |       | X    |
 | Connected user count                                      | X     | X    |
@@ -9,6 +9,7 @@
 | Particle effects (user)                                   | X     | X    |
 | Particle effects (others)                                 | X     | X    |
 | Touch compatibility                                       |       | X    |
+| Proper handling of mousing out of canvas                  | X     | X    |
 | Strokes persist when resized                              |       | X    |
 | Auo-resizeable stroke cache (for above)                   |       | X    |
 | Resize event rate throttled                               |       | X    |
