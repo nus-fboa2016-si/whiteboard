@@ -1,0 +1,9 @@
+{
+  "name": "my-collaborative-whiteboard",
+  "version": "0.0.1",
+  "description": "collaborative whiteboard",
+  "dependencies": {
+    "express": "^4.13.4",
+    "socket.io": "^1.4.5"
+  }
+}
