@@ -3,7 +3,7 @@ var createWhiteboard = function(containerElement) {
 
   var socket;
 
-  var prevX, prevY;
+  var prevX, prevY, mouseIsInside;
 
   var drawCanvas, drawCtx,
     colorString, penSize, // colorString is a DOM color string
@@ -41,6 +41,8 @@ var createWhiteboard = function(containerElement) {
   // ---------------- events
 
   function initEventHandlers() {
+    mouseIsInside = true;
+
     containerElement.onmousedown = handleMousePress;
     containerElement.onmousemove = handleMouseMove;
     document.onmouseup = handleMouseRelease;
@@ -53,7 +55,7 @@ var createWhiteboard = function(containerElement) {
     // Detect mouse release outside the window
     //document.addEventListener('mouseup', handleMouseRelease, true);
     // Clear position when mouse outside window but continue drawing when come back
-    document.onmouseout = handleMouseOut;
+    containerElement.onmouseleave = handleMouseLeave;
 
     // TODO make it only work when whiteboard container is active
     document.addEventListener('keypress', handleKeypress, true);
@@ -113,7 +115,10 @@ var createWhiteboard = function(containerElement) {
 
   function handleMouseMove(e) {
     if (!isDrawing) return;
-
+    if (!mouseIsInside) {
+      mouseIsInside = true;
+      handleMousePress(e);
+    }
     var pos = getMouseEventContainerPos(e);
     var newLine = {
       startX: prevX,
@@ -130,15 +135,8 @@ var createWhiteboard = function(containerElement) {
     socket.emit('draw line', newLine);
   }
 
-  function handleMouseOut(e) {
-    e = e || window.event;
-    var from = e.relatedTarget || e.toElement;
-    if (!from || from.nodeName === 'HTML') {
-      // handleMouseRelease();
-      var pos = getMouseEventContainerPos(e);
-      prevX = pos.x;
-      prevY = pos.y;
-    }
+  function handleMouseLeave(e) {
+    mouseIsInside = false;
   }
 
   /*
@@ -259,6 +257,7 @@ var createWhiteboard = function(containerElement) {
     s.position = 'absolute';
     s.left = '10px';
     s.bottom = '10px';
+    s.cursor = 'default';
     containerElement.appendChild(uCountSVG);
 
     uCountSVGText = document.createElementNS('http://www.w3.org/2000/svg', 'text');

@@ -29,8 +29,7 @@
     wb.width = container.clientWidth;
 
     var isDrawing = false;
-    var prevX = null;
-    var prevY = null;
+    var prevX, prevY, mouseIsInside = true;
 
     // set stroke style
     var ctx = wb.getContext('2d');
@@ -47,6 +46,10 @@
     };
     container.onmousemove = function(e){
       if (!isDrawing) return;
+      if (!mouseIsInside) {
+        mouseIsInside = true;
+        container.onmousedown(e);
+      }
       ctx.beginPath();
       ctx.moveTo(prevX, prevY);
       ctx.lineTo(e.offsetX, e.offsetY);
@@ -56,6 +59,9 @@
     };
     document.onmouseup = function(e){
       isDrawing = false;
+    };
+    container.onmouseleave = function(e) {
+      mouseIsInside = false;
     };
   </script>
 </body>

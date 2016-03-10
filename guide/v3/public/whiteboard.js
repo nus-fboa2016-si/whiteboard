@@ -9,8 +9,7 @@ wb.height = container.clientHeight;
 wb.width = container.clientWidth;
 
 var isDrawing = false;
-var prevX = null;
-var prevY = null;
+var prevX, prevY, mouseIsInside = true;
 var colorString = '#aa88ff';
 
 // set stroke style
@@ -31,6 +30,10 @@ container.onmousedown = function(e){
 
 container.onmousemove = function(e){
   if (!isDrawing) return;
+  if (!mouseIsInside) {
+    mouseIsInside = true;
+    container.onmousedown(e);
+  }
   var pos = getMouseEventContainerPos(e);
   var newLine = {
     startX: prevX,
@@ -49,15 +52,8 @@ document.onmouseup = function(e){
   isDrawing = false;
 };
 
-document.onmouseout = function(e) {
-  e = e || window.event;
-  var from = e.relatedTarget || e.toElement;
-  if (!from || from.nodeName === 'HTML') {
-    // handleMouseRelease();
-    var pos = getMouseEventContainerPos(e);
-    prevX = pos.x;
-    prevY = pos.y;
-  }
+container.onmouseleave = function(e) {
+  mouseIsInside = false;
 };
 
 function getMouseEventContainerPos(e) {
