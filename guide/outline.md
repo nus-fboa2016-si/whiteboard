@@ -1,4 +1,4 @@
-1. Basic monochrome local whiteboard
+1. Basic monochrome local whiteboard + clear screen
 
 2. Show other connected users drawing in real time + number of users connected
 

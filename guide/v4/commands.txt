@@ -1,0 +1,4 @@
+more:
+play with particle effects options
+add more custom gfx
+multiple whiteboards in same page

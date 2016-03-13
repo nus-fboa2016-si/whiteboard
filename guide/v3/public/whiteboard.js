@@ -10,10 +10,10 @@ wb.width = container.clientWidth;
 
 var isDrawing = false;
 var prevX, prevY, mouseIsInside = true;
+var colorString = '#aa88ff';
 
 // set stroke style
 var ctx = wb.getContext('2d');
-ctx.strokeStyle = '#aa88ff';
 ctx.lineWidth = 2;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
@@ -39,7 +39,8 @@ container.onmousemove = function(e){
     startX: prevX,
     startY: prevY,
     endX: pos.x,
-    endY: pos.y
+    endY: pos.y,
+    colorString: colorString
   };
   drawLine(newLine);
   socket.emit('draw line', newLine);
@@ -64,6 +65,7 @@ function getMouseEventContainerPos(e) {
 
 socket.on('draw line', drawLine);
 function drawLine(line) {
+  ctx.strokeStyle = line.colorString;
   ctx.beginPath();
   ctx.moveTo(line.startX, line.startY);
   ctx.lineTo(line.endX, line.endY);
@@ -77,3 +79,12 @@ var userCountText = container.querySelector('text.user-count');
 function updateUserCount(count) {
   userCountText.textContent = 'CONNECTED: ' + count;
 }
+
+// color picker ----------------------------------------
+
+var colorPickerWrapper = container.querySelector('.color-picker-wrapper');
+var colorPickerInput = colorPickerWrapper.querySelector('input.color-picker');
+colorPickerInput.onchange = function() {
+  colorPickerWrapper.style.backgroundColor = colorPickerInput.value;
+  colorString = colorPickerInput.value;
+};

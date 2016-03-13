@@ -9,6 +9,9 @@
       margin: 0px;
       overflow: hidden;
     }
+    #whiteboard-container canvas {
+      position: absolute;
+    }
     #whiteboard-container {
       height: 100vh;
       width: 100vw;
@@ -20,6 +23,7 @@
       position: absolute;
       left: 10px;
       bottom: 10px;
+      cursor: default;
     }
     #whiteboard-container > svg > text.user-count {
       fill: #00D5B0;
@@ -35,7 +39,7 @@
 
 <body>
   <div id="whiteboard-container">
-    <canvas id="whiteboard">Canvas not supported :(</canvas>
+    <canvas class="whiteboard">Canvas not supported :(</canvas>
     <svg height="30px" width="100%" class="user-count">
       <text x="0" y="30" class="user-count">Loading user count...</text>
     </svg>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Collaborative Whiteboard</title>
+  <link rel="stylesheet" type="text/css" href="index.css">
+</head>
+
+<body>
+  <div id="whiteboard-container">
+    <canvas class="whiteboard">Canvas not supported :(</canvas>
+    <canvas class="gfx-layer"></canvas>
+    <svg height="30px" width="100%" class="user-count">
+      <text x="0" y="30" class="user-count">Loading user count...</text>
+    </svg>
+    <div style="width: 100%; position: absolute;">
+      <div class="color-picker-wrapper" style="background-color: #aa88ff;">
+        <input class="color-picker" type="color" value="#aa88ff">
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r74/three.min.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/GPUParticleSystem.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/whiteboard.js"></script>
+</body>
+</html>
