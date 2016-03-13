@@ -312,7 +312,7 @@ var createWhiteboard = function(containerElement) {
     s = uCountSVGText.style;
     s.textAnchor = 'start';
     s.fill = '#00D5B0';
-    s.fontSize = '24px';
+    s.fontSize = '12px';
     s.fontFamily = 'sans-serif';
     uCountSVG.appendChild(uCountSVGText);
 
