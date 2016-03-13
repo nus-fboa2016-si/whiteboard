@@ -304,11 +304,8 @@ var createWhiteboard = function(containerElement) {
     s = uCountSVGText.style;
     s.textAnchor = 'start';
     s.fill = '#00D5B0';
-    s.stroke = '#000000';
-    s.strokeWidth = '1.5px';
-    s.fontSize = '24px';
+    s.fontSize = '12px';
     s.fontFamily = 'sans-serif';
-    s.fontWeight = 'bold';
     uCountSVG.appendChild(uCountSVGText);
 
     socket.on('user count', updateUserCount);
