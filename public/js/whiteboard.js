@@ -205,14 +205,15 @@ var createWhiteboard = function(containerElement) {
 
     $(pickerElem).spectrum({
       color: colorString,
-      showButtons: false,
       clickoutFiresChange: true,
       change: function(newColor) {
         colorString = '#' + newColor.toHex();
         pickerElem.setAttribute('fill', colorString);
       },
       hide: function(color) {},
-      show: function(color) {}
+      show: function(color) {
+        isPickingColor = true;
+      }
     });
   }
 
