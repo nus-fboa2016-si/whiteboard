@@ -74,6 +74,7 @@ var createWhiteboard = function(containerElement) {
         break;
       case 'touchmove':
         type = 'mousemove';
+        e.preventDefault();
         break;
       case 'touchend':
         type = 'mouseup';
