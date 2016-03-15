@@ -1,5 +1,5 @@
-var createWhiteboard = function(containerElement) {
-  var prevContainerWidth, prevContainerHeight;
+var createWhiteboard = function(parentElement) {
+  var containerElement, prevContainerWidth, prevContainerHeight;
 
   var socket;
 
@@ -24,6 +24,7 @@ var createWhiteboard = function(containerElement) {
 
   socket = io(); // WAOW! AMAZING!
 
+  initContainer();
   recordContainerDimensions();
 
   initDrawLayer();
@@ -38,6 +39,15 @@ var createWhiteboard = function(containerElement) {
     prevContainerHeight = containerElement.offsetHeight;
   }
 
+  function initContainer() {
+    containerElement = document.createElement('div');
+    var s = containerElement.style;
+    s.width = 'inherit';
+    s.height = 'inherit';
+    s.position = 'relative';
+    parentElement.appendChild(containerElement);
+  }
+
   // ---------------- events
 
   function initEventHandlers() {
@@ -45,7 +55,7 @@ var createWhiteboard = function(containerElement) {
 
     containerElement.onmousedown = handleMousePress;
     containerElement.onmousemove = handleMouseMove;
-    document.onmouseup = handleMouseRelease;
+    document.addEventListener('mouseup', handleMouseRelease);
 
     containerElement.addEventListener('touchstart', handleTouch, true);
     containerElement.addEventListener('touchmove', handleTouch, true);
@@ -199,7 +209,6 @@ var createWhiteboard = function(containerElement) {
 
   function initColorPicker() {
     var pickerElem = initPickerElement();
-    console.log(pickerElem);
     var hoverRule = 'circle.' + pickerElem.getAttribute('class') + ':hover{cursor:pointer;}';
     addRuleCSS(hoverRule);
 
@@ -225,7 +234,7 @@ var createWhiteboard = function(containerElement) {
     containerElement.appendChild(pickerPosDiv);
     s = pickerPosDiv.style;
     s.position = 'absolute';
-    s.width = '100%';
+    s.width = 'inherit';
 
     var pickerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     pickerSvg.setAttribute('class', 'wb-overlay-color-picker-svg');
@@ -254,7 +263,7 @@ var createWhiteboard = function(containerElement) {
     var uCountSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     uCountSVG.setAttribute('class', 'wb-overlay-usercount-svg');
     s = uCountSVG.style;
-    s.width = '100%';
+    s.width = 'inherit';
     s.height = '30px';
     s.position = 'absolute';
     s.left = '10px';
@@ -272,6 +281,8 @@ var createWhiteboard = function(containerElement) {
     s.fill = '#00D5B0';
     s.fontSize = '12px';
     s.fontFamily = 'sans-serif';
+    s.stroke = 'black';
+    s.strokeWidth = '0.3px';
     uCountSVG.appendChild(uCountSVGText);
 
     socket.on('user count', updateUserCount);
@@ -476,7 +487,3 @@ var createWhiteboard = function(containerElement) {
     document.getElementsByTagName('head')[0].appendChild(styleElem);
   }
 };
-
-$(function() {
-  createWhiteboard(document.getElementById('whiteboard'));
-});
