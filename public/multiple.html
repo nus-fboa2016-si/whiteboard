@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>socket.io whiteboard example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    body {
+      margin: 0px;
+      overflow: hidden;
+    }
+    .whiteboard {
+      background-color: #101010;
+      height: 100vh;
+      width: 49vw;
+      border: 2px solid white;
+      float: left;
+      position: relative;
+    }
+  </style>
+</head>
+
+<body>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r74/three.min.js"></script>
+<script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/GPUParticleSystem.js"></script>
+<script src="js/whiteboard.js"></script>
+<div class="whiteboard"></div>
+<div class="whiteboard"></div>
+<script>
+  createWhiteboard(document.getElementsByClassName('whiteboard')[0]);
+  createWhiteboard(document.getElementsByClassName('whiteboard')[1]);
+</script>
+</body>
+
+</html>
