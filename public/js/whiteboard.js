@@ -3,12 +3,11 @@ var createWhiteboard = function(parentElement) {
 
   var socket;
 
-  var prevX, prevY, mouseIsInside;
+  var prevX, prevY, isDrawing;
 
   var drawCanvas, drawCtx,
     colorString, penSize, // colorString is a DOM color string
-    cacheCanvas, cacheCtx, // hidden, used to redraw canvas on resize
-    isDrawing;
+    cacheCanvas, cacheCtx; // hidden, used to redraw canvas on resiz
 
   var camera, scene, renderer,
     clock, tick,
@@ -53,19 +52,15 @@ var createWhiteboard = function(parentElement) {
   function initEventHandlers() {
     mouseIsInside = true;
 
-    containerElement.onmousedown = handleMousePress;
-    containerElement.onmousemove = handleMouseMove;
+    containerElement.addEventListener('mousedown', handleMousePress);
+    containerElement.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseRelease);
+    containerElement.addEventListener('mouseenter', handleMouseEnter);
 
     containerElement.addEventListener('touchstart', handleTouch, true);
     containerElement.addEventListener('touchmove', handleTouch, true);
     containerElement.addEventListener('touchend', handleTouch, true);
     containerElement.addEventListener('touchcancel', handleTouch, true);
-
-    // Detect mouse release outside the window
-    //document.addEventListener('mouseup', handleMouseRelease, true);
-    // Clear position when mouse outside window but continue drawing when come back
-    containerElement.onmouseleave = handleMouseLeave;
 
     // TODO make it only work when whiteboard container is active
     document.addEventListener('keypress', handleKeypress, true);
@@ -126,10 +121,6 @@ var createWhiteboard = function(parentElement) {
 
   function handleMouseMove(e) {
     if (!isDrawing) return;
-    if (!mouseIsInside) {
-      mouseIsInside = true;
-      handleMousePress(e);
-    }
     var pos = getMouseEventContainerPos(e);
     var newLine = {
       startX: prevX,
@@ -146,8 +137,9 @@ var createWhiteboard = function(parentElement) {
     socket.emit('draw line', newLine);
   }
 
-  function handleMouseLeave(e) {
-    mouseIsInside = false;
+  function handleMouseEnter(e) {
+    if (!isDrawing) return;
+    handleMousePress(e);
   }
 
   /*
