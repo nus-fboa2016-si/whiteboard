@@ -3,14 +3,16 @@
 
 ---
 #### Introduction
-The HTML5 `canvas` API allows web developers to draw graphics via scripting. By itself it already provides several useful methods for drawing simple shapes and lines. This makes it ideal for implementing an interactive whiteboard.
 
-In this first section of the collabarative whiteboard guide, we will learn to create a simple local interactive whiteboard on a webpage, and serve it from a `node.js` server.
+This is the first in a series of four tutorials that walk you through the creation of a real-time collaborative whiteboard with Socket.IO. A fully featured demo can be found [here](paradite.com:3000).
+
+The HTML5 `canvas` API allows web developers to draw graphics via scripting. By itself it already provides several useful methods for drawing simple shapes and lines. This makes it ideal for implementing our interactive whiteboard. In this section of the collabarative whiteboard guide, we will learn to create a simple local interactive whiteboard on a webpage, and serve it from a `node.js` server.
 
 Try the [chat](http://socket.io/get-started/chat/) guide if you haven't already done so. It takes very little time and will familiarize you with useful parts of the `socket.io` API. 
 
 ---
 #### Setup the server
+
 We will use the Node.JS web framework `express` to serve our files. Just like in the [chat guide](http://socket.io/get-started/chat/), we start with an empty project directory (you can call it `whiteboard`). Let's create a `package.json` manifest file to describe the project:
 ```json
 {
@@ -40,9 +42,7 @@ http.listen(parseInt(process.argv[2]), function(){
   console.log('listening on port ' + process.argv[2]);
 });
 ```
-This means that when we run `node index 3000`, the server listens on port 3000 (feel free to use any other port number), and the file `index.html` in the project root directory is served to clients.
-
-We don't have our `index.html` file yet, so let's create one:
+This means that when we run `node index 3000`, the server listens on port 3000 (feel free to use any other port number), and we serve the `index.html` file in the project root directory to clients. We don't have our `index.html` file yet, so let's create one:
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -62,6 +62,7 @@ Now if we run `node index 3000` and point our browser to `localhost:3000`, we sh
 
 ---
 #### Setup the whiteboard
+
 We will use the HTML5 `canvas` element to implement a simple whiteboard. We start by declaring the canvas used by the whiteboard in `index.html`, in the `<body>` tag:
 ```html
 <body>
@@ -92,13 +93,16 @@ Then we style the page and canvas by adding the following style code to the `<he
       right: 0;
       margin: auto;
     }
+    #whiteboard-container canvas {
+      position: absolute;
+    }
   </style>
 ...
 </head>
 ```
 If you want to change the dimensions of the whiteboard, change the `height` and `width` values under the `#whiteboard-container` ruleset.
 
-We will draw directly to the 2d context of our `canvas`, so we can initialise the whiteboard by adding an inline `<script>` to the bottom of the `<body>` tag:
+We will draw directly to the `CanvasRenderingContext2D` of our `canvas` element, so we initialise the whiteboard by adding an inline `<script>` to the bottom of the `<body>` tag:
 ```html
 <body>
 ...
@@ -121,6 +125,7 @@ We will draw directly to the 2d context of our `canvas`, so we can initialise th
 
 ---
 #### Drawing logic
+
 We want the user's mouse movements to be recorded on the whiteboard, but **only** while the main mouse button is held down. To do that, we will write our own handlers for the `mousedown`, `mouseup`, and `mousemove` events. Append the following code to the inline script:
 ```html
 <script>
@@ -192,7 +197,7 @@ Now we have a simple but functional whiteboard:
 > VIDEO PLACEHOLDER: browser view, drawing shapes in whiteboard
 ```
 
-If you've played with it yourself, you might have noticed something wrong:
+If we play around with the whiteboard, we might notice something odd:
 ```
 > VIDEO PLACEHOLDER: browser view, start cursor in borders, hold mouse button, 
     move cursor out of bottom border and back in through top border, release mouse button. 
@@ -200,8 +205,8 @@ If you've played with it yourself, you might have noticed something wrong:
 ```
 This behaviour is caused by:
 
-1. The `container.onmouseup` callback not firing when you release the mouse button outside the whiteboard, so `isDrawing` is stuck on `true`
-2, The `prevX` and `prevY` variables still holding the last position of the mouse inside the whiteboard even when the mouse leaves and reenters from a different location
+1. The `container.onmouseup` callback not firing when releasing the mouse button outside the whiteboard, so `isDrawing` is stuck on `true`
+2. The `prevX` and `prevY` variables still holding the last position of the mouse inside the whiteboard even when the mouse leaves and reenters from a different location
 
 Let's fix the first issue by hooking the `mouseup` callback to the entire document instead of just the canvas:
 ```javascript
@@ -223,11 +228,12 @@ Let's see if it's fixed:
 > VIDEO PLACEHOLDER: browser view, start cursor in borders, 
     hold mouse button, draw randomly weaving in and out the borders
 ```
-Great!
+Great! Now we have a simple and responsive whiteboard.
 
 ---
 #### Final code
-Here is what your code should look like:
+
+Here is what our code should look like at this point:
 
 `index.js`
 ```javascript
@@ -267,6 +273,9 @@ http.listen(parseInt(process.argv[2]), function(){
       left: 0;
       right: 0;
       margin: auto;
+    }    
+    #whiteboard-container canvas {
+      position: absolute;
     }
   </style>
 </head>
@@ -323,6 +332,7 @@ http.listen(parseInt(process.argv[2]), function(){
 
 ---
 #### Homework
+
 Here are some ideas to improve the application:
 - Some way for the user to clear the screen
 - Let users erase parts of the board with the mouse
@@ -331,6 +341,7 @@ Here are some ideas to improve the application:
 
 ---
 #### Getting this example
+
 You can find it on GitHub [here](.).
 ```
 git clone https://github.com/nus-fboa2016-si/whiteboard.git
