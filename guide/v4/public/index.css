@@ -3,9 +3,6 @@ body {
   margin: 0px;
   overflow: hidden;
 }
-#whiteboard-container canvas {
-  position: absolute;
-}
 #whiteboard-container {
   height: 600px;
   width: 900px;
@@ -16,6 +13,9 @@ body {
   left: 0px;
   right: 0px;
   margin: auto;
+}
+#whiteboard-container canvas {
+  position: absolute;
 }
 #whiteboard-container > svg.user-count {
   height: 30px;

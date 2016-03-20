@@ -15,11 +15,10 @@ ctx.lineWidth = 2;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
-// for drawing logic
+// draw logic ------------------------------------------
+
 var prevX, prevY,
     isDrawing = false;
-
-// event handlers --------------------------------------
 
 container.onmousedown = function(e){
   e.preventDefault();
