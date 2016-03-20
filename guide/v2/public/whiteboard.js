@@ -43,7 +43,7 @@ container.onmousemove = function(e){
   prevY = pos.y;
 };
 
-document.onmouseup = function(e){
+document.onmouseup = function(){
   isDrawing = false;
 };
 

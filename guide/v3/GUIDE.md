@@ -336,7 +336,7 @@ colorPickerInput.onchange = function() {
 
 Here are some ideas to improve the application:
 - Let users to choose line thickness
-- Let users mix multiple colors to form a gradiant line
+- Let users mix multiple colors to form a gradient line
 - Implement your favorite special brush effect for the lines
 - Implement shape stamps
 - Helper to draw text as lines

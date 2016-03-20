@@ -1,8 +1,8 @@
-# Drawing with others in real-time
- <p align="center">[(Creating a simple whiteboard) &lt; previous](../v1/GUIDE.md)  |   [next &gt; (Adding color to your life)](../v3/GUIDE.md)</p>
+# Simultaneous drawing with multiple users
+ <p align="center">[(Creating a simple whiteboard) &lt; previous](../v1/GUIDE.md)  |   [next &gt; (Augmenting user strokes: color)](../v3/GUIDE.md)</p>
  
 ---
-#### Introduction
+#### Collaborate in real-time.
 
 This is the second in a series of four tutorials that walk you through the creation of a real-time collaborative whiteboard with Socket.IO. A fully featured demo can be found [here](paradite.com:3000).
 
@@ -87,7 +87,7 @@ package.json
 /node_modules
 ```
 
-We still have to link `public/index.css` and `public/whiteboard.js` back to `public/index.html`:
+We still have to link `public/index.css` and `public/whiteboard.js` back to `public/index.html`. Make sure the `whiteboard.js` script is below all other scripts:
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -482,7 +482,7 @@ container.onmousemove = function(e){
   prevY = pos.y;
 };
 
-document.onmouseup = function(e){
+document.onmouseup = function(){
   isDrawing = false;
 };
 
@@ -537,4 +537,4 @@ cd whiteboard/guide/v2
 ```
 
 ---
- <p align="center">[(Creating a simple whiteboard) &lt; previous](../v1/GUIDE.md)  |   [next &gt; (Adding color to your life)](../v3/GUIDE.md)</p>
+ <p align="center">[(Creating a simple whiteboard) &lt; previous](../v1/GUIDE.md)  |   [next &gt; (Augmenting user strokes: color)](../v3/GUIDE.md)</p>

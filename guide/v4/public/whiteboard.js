@@ -9,8 +9,9 @@ wb.height = container.clientHeight;
 wb.width = container.clientWidth;
 
 // set stroke style
+var colorString = '#aa88ff';
 var ctx = wb.getContext('2d');
-ctx.strokeStyle = '#aa88ff';
+ctx.strokeStyle = colorString;
 ctx.lineWidth = 2;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
@@ -44,7 +45,7 @@ container.onmousemove = function(e){
   prevY = pos.y;
 };
 
-document.onmouseup = function(e){
+document.onmouseup = function(){
   isDrawing = false;
 };
 
@@ -108,18 +109,18 @@ var camera = new THREE.PerspectiveCamera(
 
 var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000}),
     spawnerOpts = {
-  spawnRate: 3000,
-  timeScale: 1
+      spawnRate: 3000,
+      timeScale: 1
 },
     particleOpts = {
-  positionRandomness: 0.5,
-  velocity: new THREE.Vector3(),
-  velocityRandomness: 0.5,
-  colorRandomness: 0.2,
-  turbulence: 0.4,
-  lifetime: 0.8,
-  size: 16,
-  sizeRandomness: 1
+      positionRandomness: 0.5,
+      velocity: new THREE.Vector3(),
+      velocityRandomness: 0.5,
+      colorRandomness: 0.2,
+      turbulence: 0.4,
+      lifetime: 0.8,
+      size: 16,
+      sizeRandomness: 1
 };
 
 camera.position.z = 100;
@@ -145,15 +146,17 @@ function animate() {
 }
 
 function spawnParticlesAlongLine(number, line) {
-  for (var i = 0; i < number; i++) {
+  for (var i = 0; i < number; i++) { // ensure uniform distribution
     var percent = i / number;
-    var pos = getWorldPosFromCameraPos(
+    var pos = getWorldPosFromCameraPos( // position particle on correct part of line
         line.startX * (1 - percent) + line.endX * percent,
         line.startY * (1 - percent) + line.endY * percent
     );
+    // convert our colorString into RGB hex for the particle system
     particleOpts.color = parseInt(line.colorString.substr(1), 16);
+    // start position of this particle
     particleOpts.position = new THREE.Vector3(pos.x, pos.y, 0);
-    particleSystem.spawnParticle(particleOpts);
+    particleSystem.spawnParticle(particleOpts); // Let it gooo..
   }
 }
 

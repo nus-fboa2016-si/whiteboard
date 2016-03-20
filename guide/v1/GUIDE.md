@@ -1,12 +1,12 @@
 # Creating a simple whiteboard
- <p align="center">&lt; previous  |   [next &gt; (Drawing with others in real time)](../v2/GUIDE.md)</p>
+ <p align="center">|   [next &gt; (Simultaneous drawing with multiple users)](../v2/GUIDE.md)</p>
 
 ---
 #### Introduction
 
 This is the first in a series of four tutorials that walk you through the creation of a real-time collaborative whiteboard with Socket.IO. A fully featured demo can be found [here](paradite.com:3000).
 
-The HTML5 `canvas` API allows web developers to draw graphics via scripting. By itself it already provides several useful methods for drawing simple shapes and lines. This makes it ideal for implementing our interactive whiteboard. In this section of the collabarative whiteboard guide, we will learn to create a simple local interactive whiteboard on a webpage, and serve it from a `node.js` server.
+The HTML5 `canvas` API allows web developers to draw graphics via scripting. By itself it already provides several useful methods for drawing simple shapes and lines. This makes it ideal for implementing our interactive whiteboard. In this tutorial, we will learn to create a simple local interactive whiteboard on a webpage, and serve it from a `node.js` server.
 
 Try the [chat](http://socket.io/get-started/chat/) guide if you haven't already done so. It takes very little time and will familiarize you with useful parts of the `socket.io` API. 
 
@@ -318,7 +318,7 @@ http.listen(parseInt(process.argv[2]), function(){
       prevX = e.offsetX;
       prevY = e.offsetY;
     };
-    document.onmouseup = function(e){
+    document.onmouseup = function(){
       isDrawing = false;
     };
     container.onmouseenter = function(e) {
@@ -351,4 +351,4 @@ cd whiteboard/guide/v1
 ```
 
 ---
- <p align="center">&lt; previous  |   [next &gt; (Drawing with others in real time)](../v2/GUIDE.md)</p>
+ <p align="center">|   [next &gt; (Simultaneous drawing with multiple users)](../v2/GUIDE.md)</p>

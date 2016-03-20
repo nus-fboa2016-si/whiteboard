@@ -9,8 +9,9 @@ wb.height = container.clientHeight;
 wb.width = container.clientWidth;
 
 // set stroke style
+var colorString = '#aa88ff';
 var ctx = wb.getContext('2d');
-ctx.strokeStyle = '#aa88ff';
+ctx.strokeStyle = colorString;
 ctx.lineWidth = 2;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
@@ -44,7 +45,7 @@ container.onmousemove = function(e){
   prevY = pos.y;
 };
 
-document.onmouseup = function(e){
+document.onmouseup = function(){
   isDrawing = false;
 };
 
