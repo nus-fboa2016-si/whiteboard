@@ -59,6 +59,9 @@ var socket = io();
 
 Let's see what happens when we visit and leave the page on our browser:
 ```
+node index 3000
+```
+```
 > VIDEO PLACEHOLDER: browser and terminal view, connect on two tabs, close one tab, then close the other.
     Shows that socket.io detects these events through the print statements.
 ```
