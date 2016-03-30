@@ -83,7 +83,7 @@ This particle library requires some texture files to work. Create a new director
 
 `particle2.png`, which can be found [here](public/textures/particle2.png).
 
-`perlin-512.png`, which can be found [here](public/textures/particle2.png).
+`perlin-512.png`, which can be found [here](public/textures/perlin-512.png).
 
 Then we append the following code at the bottom of `public/whiteboard.js` to initialise the particle system:
 ```javascript
@@ -435,7 +435,6 @@ colorPickerInput.onchange = function() {
 
 // particle effects ------------------------------------
 
-var unanimatedLines = [];
 var tick = 0, clock = new THREE.Clock(true);
 var gfxCanvas = container.querySelector('canvas.gfx-layer');
 
@@ -452,12 +451,16 @@ var camera = new THREE.PerspectiveCamera(
     }),
     scene = new THREE.Scene();
 
+camera.position.z = 100;
+renderer.setSize(container.offsetWidth, container.offsetHeight);
+renderer.setClearColor(0x000000, 0);
+
 var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000}),
-    spawnerOpts = {
+var spawnerOpts = {
       spawnRate: 3000,
       timeScale: 1
-},
-    particleOpts = {
+};
+var particleOpts = {
       positionRandomness: 0.5,
       velocity: new THREE.Vector3(),
       velocityRandomness: 0.5,
@@ -468,9 +471,6 @@ var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000}),
       sizeRandomness: 1
 };
 
-camera.position.z = 100;
-renderer.setSize(container.offsetWidth, container.offsetHeight);
-renderer.setClearColor(0x000000, 0);
 scene.add(particleSystem);
 
 animate();
@@ -497,11 +497,9 @@ function spawnParticlesAlongLine(number, line) {
         line.startX * (1 - percent) + line.endX * percent,
         line.startY * (1 - percent) + line.endY * percent
     );
-    // convert our colorString into RGB hex for the particle system
-    particleOpts.color = parseInt(line.colorString.substr(1), 16);
-    // start position of this particle
-    particleOpts.position = new THREE.Vector3(pos.x, pos.y, 0);
-    particleSystem.spawnParticle(particleOpts); // Let it gooo..
+    particleOpts.color = parseInt(line.colorString.substr(1), 16); // convert our colorString into RGB hex for the particle system
+    particleOpts.position = new THREE.Vector3(pos.x, pos.y, 0); // start position of this particle
+    particleSystem.spawnParticle(particleOpts);
   }
 }
 
