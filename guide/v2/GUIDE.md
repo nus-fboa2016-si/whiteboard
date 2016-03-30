@@ -159,7 +159,7 @@ The user count element will show `Loading user count...` until we update the tex
 }
 ```
 
-We also need to prevent our cursor changing from `default` to `text`. Change `container.onmousedown` in `public/whiteboard.js`:
+We also need to prevent our cursor changing from type `default` to type `text`. Change `container.onmousedown` in `public/whiteboard.js`:
 ```javascript
 container.onmousedown = function(e){
   e.preventDefault();
@@ -170,6 +170,9 @@ container.onmousedown = function(e){
 ```
 
 Here is what our user count element looks like now:
+```
+node index 3000
+```
 ```
 > IMAGE PLACEHOLDER: browser view
 ```
@@ -201,6 +204,9 @@ http.listen(parseInt(process.argv[2]), function(){
 
 Here it is in action:
 ```
+node index 3000
+```
+```
 > VIDEO PLACEHOLDER: browser and terminal view, connect on two tabs, close one tab, then close the other.
     Shows that socket.io tracks connect count through the print statements.
 ```
@@ -222,6 +228,7 @@ io.on('connection', function(socket){
 
 Finally we close the circuit by capturing the `'user count'` event on the client and manipulating our user count element. Add this code to the bottom of the `public/whiteboard.js` file:
 ```javascript
+// user count
 socket.on('user count', updateUserCount);
 var userCountText = container.querySelector('text.user-count');
 function updateUserCount(count) {
@@ -230,6 +237,9 @@ function updateUserCount(count) {
 ```
 
 Let's see it in action:
+```
+node index 3000
+```
 ```
 > VIDEO PLACEHOLDER: browser and terminal view, connect on two tabs, close one tab, then close the other.
     Shows that browser page displays user count accurately
@@ -343,6 +353,9 @@ socket.on('draw line', drawLine);
 ```
 
 With this, we are done! Check it out:
+```
+node index 3000
+```
 ```
 > VIDEO PLACEHOLDER: multiple browser view, draw on either board and see it reflected on other boards.
 ```
