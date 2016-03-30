@@ -41,11 +41,14 @@ http.listen(parseInt(process.argv[2]), function(){
   console.log('listening on port ' + process.argv[2]);
 });
 ```
-Note how we initialize the `socket.io` instance by passing it the `http` server object. Now we include the `socket.io-client` script in our client-side `index.html`, at the bottom of the `<body>` tag:
+Note how we initialize the `socket.io` instance by passing it the `http` server object. Now we include the `socket.io-client` script in our client-side `index.html`, above the `<script>` tag with our whiteboard logic:
 ```html
 <body>
 ...
+    <canvas class="whiteboard">Canvas not supported :(</canvas>
+  </div>
   <script src="/socket.io/socket.io.js"></script>
+...
 </body>
 ```
 
