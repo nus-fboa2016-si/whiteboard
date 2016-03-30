@@ -147,10 +147,9 @@ First, we need to track when the user holds the main mouse button down. We'll us
 ```html
 <script>
 ...
-  // for drawing logic
+  // draw logic
   var isDrawing = false;
-    
-  // event handlers
+  
   container.onmousedown = function(e){
     isDrawing = true;
   };
@@ -167,11 +166,10 @@ Next we need to store the previous position of the pointer, so we can draw a lin
 ```html
 <script>
 ...
-// for drawing logic
+// draw logic
 var prevX, prevY,
-  isDrawing = false;
+    isDrawing = false;
 
-// event handlers
 container.onmousedown = function(e){
   isDrawing = true;
   prevX = e.offsetX;
@@ -299,11 +297,10 @@ http.listen(parseInt(process.argv[2]), function(){
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // for drawing logic
+    // draw logic
     var prevX, prevY,
         isDrawing = false;
 
-    // event handlers
     container.onmousedown = function(e){
       isDrawing = true;
       prevX = e.offsetX;
