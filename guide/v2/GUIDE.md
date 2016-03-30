@@ -79,6 +79,7 @@ Right now we only have two files in use: `index.html` and `index.js`. If you hav
 all in the same file results in a lot of visual clutter. Let's restructure our project directory with a mind for separation of concerns.
 
 We will do these in order:
+
 1. Create a `public` folder to hold all public assets that we serve to clients
 2. Move `index.html` into the `public` folder
 3. Extract the contents of the `<style>` tag into `public/index.css`
