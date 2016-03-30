@@ -71,9 +71,11 @@ That's all it takes for Socket.IO to maintain the connection between client and 
 #### Structuring project files
 
 Right now we only have two files in use: `index.html` and `index.js`. If you have implemented some of the 'homework' features suggested in the previous tutorial, you must have realised that having
+
 - style rules
 - document markup
 - script code
+
 all in the same file results in a lot of visual clutter. Let's restructure our project directory with a mind for separation of concerns.
 
 We will do these in order:
