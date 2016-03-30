@@ -15,24 +15,32 @@ We are now at the final tutorial of this guide, so let us end on a special note.
 Let's do the same here.
 
 ---
-#### Integrating `THREE.js` and `GPUParticleSystem.js`
+#### Integrating `THREE.js`
 
-[`THREE.js`](http://threejs.org/) is a powerful and popular library for rendering 3D graphics on HTML5's `canvas` element. `THREE.js` is poweful, but we'd rather not write a particle system from scratch. Luckily, we can use the particle system from [this](http://threejs.org/examples/#webgl_gpu_particle_system) example (credit: [Charlie Hoey](http://charliehoey.com/)). 
+[`THREE.js`](http://threejs.org/) is a powerful and popular library for rendering 3D graphics on HTML5's `canvas` element. 
 
-First let us include the library scripts (`THREE.js` and `GPUParticleSystem.js`) in our `public/index.html` file. We can use the versions hosted on their CDNs:
+First let us include the library script for `THREE.js` before the `/whiteboard.js` script in our `public/index.html` file. We can use the version hosted on the CDN:
 ```html
 ...
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r74/three.min.js"></script>
-  <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/GPUParticleSystem.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/whiteboard.js"></script>
 </body>
 </html>
 ```
 
-Next, we append the following code to initialise the 3D libraries at the bottom of `public/whiteboard.js`:
+Next, in `public/index.html`, we add a canvas to the whiteboard container `<div>` to serve as the rendering canvas for `THREE.js`. Put it right between the whiteboard `<canvas>` and the user count `<svg>`:
+```html
+...
+<canvas class="whiteboard">Canvas not supported :(</canvas>
+<canvas class="gfx-layer"></canvas> // new
+<svg height="30px" width="100%" class="user-count">
+...
+```
+
+Then, we append the following code at the bottom of `public/whiteboard.js` to initialise the 3D world:
 ```javascript
-// particle effects ------------------------------------
+// particle effects
 
 var tick = 0, clock = new THREE.Clock(true);
 var gfxCanvas = container.querySelector('canvas.gfx-layer');
@@ -50,12 +58,43 @@ var camera = new THREE.PerspectiveCamera(
     }),
     scene = new THREE.Scene();
 
+camera.position.z = 100;
+renderer.setSize(container.offsetWidth, container.offsetHeight);
+renderer.setClearColor(0x000000, 0);
+```
+
+---
+#### Integrating `GPUParticleSystem.js`
+
+`THREE.js` is poweful, but we'd rather not write a particle system from scratch. Luckily, we can use the particle system from [this](http://threejs.org/examples/#webgl_gpu_particle_system) example (credit: [Charlie Hoey](http://charliehoey.com/)). 
+
+Just like before, we include the library script for `GPUParticleSystem.js` after the `THREE.js` script and before the `/whiteboard.js` script in our `public/index.html` file. We can use the version hosted on the CDN:
+```html
+...
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r74/three.min.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/GPUParticleSystem.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/whiteboard.js"></script>
+</body>
+</html>
+```
+
+This particle library requires some texture files to work. Create a new directory `textures` inside `public/`. Then, save these two image files inside `public/textures/`:
+
+`particle2.png`
+![](public/textures/particle2.png)
+
+`perlin-512.png`
+![](public/textures/particle2.png)
+
+Then we append the following code at the bottom of `public/whiteboard.js` to initialise the particle system:
+```javascript
 var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000}),
-    spawnerOpts = {
+var spawnerOpts = {
       spawnRate: 3000,
       timeScale: 1
-},
-    particleOpts = {
+};
+var particleOpts = {
       positionRandomness: 0.5,
       velocity: new THREE.Vector3(),
       velocityRandomness: 0.5,
@@ -66,30 +105,26 @@ var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000}),
       sizeRandomness: 1
 };
 
-camera.position.z = 100;
-renderer.setSize(container.offsetWidth, container.offsetHeight);
-renderer.setClearColor(0x000000, 0);
 scene.add(particleSystem);
 ```
-The important variables to take note of are `particleSystem` and `particleOpts`. If you experience perfomance issues when using the whiteboard, or want to turn up the seizure inducing lights, you can tweak the options here. You can see the results of changing these options at the [official GPUParticleSystem demo](http://threejs.org/examples/#webgl_gpu_particle_system). Play around to find your ideal settings!
+
+Take note of `particleSystem` and `particleOpts`. If you experience perfomance issues when using the whiteboard, or want to turn up the seizure inducing lights, tweak the options here. You can see the results of changing these options at the [official GPUParticleSystem demo](http://threejs.org/examples/#webgl_gpu_particle_system). Play around to find your ideal settings!
 
 ---
 #### Adding particle effects when drawing
 
-There are many strategies we can use for spawning the particles. The most obvious way is to spawn them at the user's current mouse position, but we've tried that before and the particles dont follow the mouse trail nicely; we want streamers, not a firehose.
-```
-> IMAGE PLACEHOLDER: stock photos: streamers, firehose full blast
-```
+There are many strategies we can use for spawning the particles. The most obvious way is to spawn them at the user's current mouse position, but if we do that the particles don't follow the mouse trail nicely. You can try it out yourself and compare the animation with the [demo](paradite.com:3000).
 
-With that in mind, let's use a slightly different particle spawning strategy: 
+With that in mind, let's use a slightly different particle spawning strategy:
+
 1. Every line segment drawn will emit a burst of particles uniformly along its length.
 2. Every line segment is animated in this way only once.
 3. The particles match the line segment's color.
 4. We see particle effects when other users draw too.
 
-We will keep track of fresh line segments that have not yet been animated in an array, and pop them from the array when they have been animated. Let us call the array `unanimatedLines` and declare it at the top of the `// particle effects ----` section in `public/whiteboardjs`:
+We will keep track of fresh line segments that have not yet been animated in an array, and pop them from the array when they have been animated. Let us call the array `unanimatedLines` and declare it at the top of the `// particle effects` section in `public/whiteboardjs`:
 ```javascript
-// particle effects ------------------------------------
+// particle effects
 
 var unanimatedLines = [];
 var tick = 0, clock = new THREE.Clock(true);
@@ -106,7 +141,7 @@ function drawLine(line) {
 ```
 Since this function is also called when other users' strokes are received, we can fulfill condition **#4** of our strategy.
 
-Now we need to consume those unanimated lines in our animation loop. Copy this code to the bottom of the `// particle effects ----` section in `public/whiteboard.js`:
+Now we need to consume those unanimated lines in our animation loop. Copy this code to the bottom of the `// particle effects` section in `public/whiteboard.js`:
 ```javascript
 animate();
 function animate() {
@@ -127,7 +162,7 @@ function animate() {
 ```
 Focus on the middle section of `animate`. The `forEach` callback calls the as yet undeclared `spawnParticlesAlongLine` function on each line in `unanimatedLines` to animate them. Once the loop is complete, we clear the `unanimatedLines` array to fulfill condition **#2** of our strategy.
 
-We are left with conditions **#1** and **#3** of our particle spawning strategy. Let us write our `spawnParticlesAlongLine` function to fulfill them. Add this code to the bottom of the `// particle effects ----` section in `public/whiteboard.js`:
+We are left with conditions **#1** and **#3** of our particle spawning strategy. Let us write our `spawnParticlesAlongLine` function to fulfill them. Add this code to the bottom of the `// particle effects` section in `public/whiteboard.js`:
 ```javascript
 function spawnParticlesAlongLine(number, line) {
   for (var i = 0; i < number; i++) { // ensure uniform distribution
@@ -138,7 +173,7 @@ function spawnParticlesAlongLine(number, line) {
     };
     particleOpts.color = parseInt(line.colorString.substr(1), 16); // convert our colorString into RGB hex for the particle system
     particleOpts.position = new THREE.Vector3(pos.x, pos.y, 0); // start position of this particle
-    particleSystem.spawnParticle(particleOpts); // LET IT GOOOO
+    particleSystem.spawnParticle(particleOpts);
   }
 }
 ```
@@ -148,7 +183,7 @@ That looks correct, but when we try drawing on the whiteboard...
 > VIDEO PLACEHOLDER: multiple browser view, drawing to show no particle effects
 ```
 
-What's wrong? It turns out the spawn positions of our missing particles were based on the 2D line's position. However, the particles are in a 3D "world", and we have to map the 2D screen position to the 3D world position so they spawn where we want them. Let's use the undeclared function `getWorldPosFromCameraPos` to perform the mapping for us. Change the `var pos = {x: ... y: ...};` as such:
+What's wrong? It turns out the spawn positions of our missing particles were based on the 2D line's position. However, the particles are in a 3D "world", and we have to map the 2D screen position to the 3D world position so they spawn where we want them. Let's use the undeclared function `getWorldPosFromCameraPos` to perform the mapping for us. Change the `var pos = {x: ... y: ...};` in `spawnParticlesAlongLine` as such:
 ```javascript
 var pos = getWorldPosFromCameraPos( // position particle on correct part of line
         line.startX * (1 - percent) + line.endX * percent,
