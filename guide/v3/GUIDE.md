@@ -52,7 +52,7 @@ The key idea here is to style the wrapper element into the desired shape and cen
 > IMAGE PLACEHOLDER: browser view
 ```
 
-Right now the user can choose a new color by clicking on our color picker, but it won't actually do anything. We need to write code to track the current color choice of the user and change it when needed. Let's declare a `colorString` variable to track the current color choice in the format of a CSS color string. Make the following changes to `public/whiteboard.js`:
+Right now the user can choose a new color by clicking on our color picker, but it won't actually do anything. We need to write code to track the current color choice of the user and change it when needed. Let's declare a `colorString` variable to track the current color choice in the format of a CSS color string. Make the following changes to the `// set stroke style` section of  `public/whiteboard.js`:
 ```javascript
 ...
 // set stroke style
@@ -60,12 +60,14 @@ var colorString = '#aa88ff';    //new
 var ctx = wb.getContext('2d');
 ctx.strokeStyle = colorString;  //change
 ctx.lineWidth = 2;
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
 ...
 ```
 
 We will use the `change` event to detect when the user commits their new color choice through the `<input>`. Let's append some code at the bottom of `public/whiteboard.js` to do that:
 ```javascript
-// color picker ----------------------------------------
+// color picker
 
 var colorPickerWrapper = container.querySelector('.color-picker-wrapper');
 var colorPickerInput = colorPickerWrapper.querySelector('input.color-picker');
@@ -80,6 +82,7 @@ Now we can test that our color changes are reflected in the `colorString` variab
 ```
 > VIDEO PLACEHOLDER: browser view + browser console, change color a few times and watch console output
 ```
+We don't need it any more, so remove the `console.log(colorString)` line in the `onchange` callback.
 
 ---
 #### Coloring the user's new strokes
