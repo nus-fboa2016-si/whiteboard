@@ -31,7 +31,7 @@ io.on('connection', function(socket){
   socket.on('disconnect', function(){
     console.log('A user disconnected');
   });
-}
+});
 
 app.get('/', function(req, res){
   res.sendFile('index.html', {root: __dirname});
