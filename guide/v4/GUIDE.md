@@ -81,8 +81,9 @@ Just like before, we include the library script for `GPUParticleSystem.js` after
 
 This particle library requires some texture files to work. Create a new directory `textures` inside `public/`. Then, save these two image files inside `public/textures/` with these names:
 
-`particle2.png`, which can be found [here](public/textures/particle2.png)
-`perlin-512.png`, which can be found [here](public/textures/particle2.png)
+`particle2.png`, which can be found [here](public/textures/particle2.png).
+
+`perlin-512.png`, which can be found [here](public/textures/particle2.png).
 
 Then we append the following code at the bottom of `public/whiteboard.js` to initialise the particle system:
 ```javascript
