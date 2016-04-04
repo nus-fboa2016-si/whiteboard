@@ -63,7 +63,7 @@ Now if we run `node index 3000` and point our browser to `localhost:3000`, we sh
 ---
 #### Setup the whiteboard
 
-We will use the HTML5 `canvas` element to implement a simple whiteboard. We start by declaring the canvas used by the whiteboard in `index.html`, in the `<body>` tag:
+We will use the HTML5 `canvas` element to implement a simple whiteboard. Remove the line `<h1>HELLO WORLD</h1>`. Next we start by declaring the canvas used by the whiteboard in `index.html`, in the `<body>` tag:
 ```html
 <body>
   <div id="whiteboard-container">
