@@ -110,7 +110,7 @@ camera.position.z = 100;
 renderer.setSize(container.offsetWidth, container.offsetHeight);
 renderer.setClearColor(0x000000, 0);
 
-var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000}),
+var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000});
 var spawnerOpts = {
       spawnRate: 3000,
       timeScale: 1

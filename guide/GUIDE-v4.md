@@ -10,8 +10,6 @@ In our [previous](GUIDE-v3.md) installment of the guide, we augmented the user's
 
 We are now at the final tutorial of this guide, so let us end on a special note. Up till now we have only been working with 2D graphics. If you've played with the [demo](paradite.com:3000) then you've noticed the most glaring difference between it and our own whiteboard: fancy 3D particle effects. 
 
-![> VIDEO PLACEHOLDER: browser view, demo version, draw randomly](images/asdf)
-
 Let's do the same here.
 
 ---
@@ -29,18 +27,18 @@ First let us include the library script for `THREE.js` before the `/whiteboard.j
 </html>
 ```
 
-Next, in `public/index.html`, we add a canvas to the whiteboard container `<div>` to serve as the rendering canvas for `THREE.js`. Put it right between the whiteboard `<canvas>` and the user count `<svg>`:
+Next, in `public/index.html`, we add another `<canvas>` to the whiteboard container `<div>` to serve as the rendering canvas for `THREE.js`. Put it right between the whiteboard `<canvas>` and the user count `<svg>`:
 ```html
 ...
 <canvas class="whiteboard">Canvas not supported :(</canvas>
-<canvas class="gfx-layer"></canvas> // new
+<canvas class="gfx-layer"></canvas> 
 <svg height="30px" width="100%" class="user-count">
 ...
 ```
 
 Then, we append the following code at the bottom of `public/whiteboard.js` to initialise the 3D world:
 ```javascript
-// particle effects
+// 3d particle effects
 
 var tick = 0, clock = new THREE.Clock(true);
 var gfxCanvas = container.querySelector('canvas.gfx-layer');
@@ -72,7 +70,7 @@ Just like before, we include the library script for `GPUParticleSystem.js` after
 ```html
 ...
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r74/three.min.js"></script>
-  <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/GPUParticleSystem.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/a84b64b1d7efb31ba36a1b10d11a1d1f9f7b7c26/examples/js/GPUParticleSystem.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/whiteboard.js"></script>
 </body>
@@ -81,13 +79,13 @@ Just like before, we include the library script for `GPUParticleSystem.js` after
 
 This particle library requires some texture files to work. Create a new directory `textures` inside `public/`. Then, save these two image files inside `public/textures/` with these names:
 
-`particle2.png`, which can be found [here](public/textures/particle2.png).
+`particle2.png`, which can be found [here](v4/public/textures/particle2.png).
 
-`perlin-512.png`, which can be found [here](public/textures/perlin-512.png).
+`perlin-512.png`, which can be found [here](v4/public/textures/perlin-512.png).
 
 Then we append the following code at the bottom of `public/whiteboard.js` to initialise the particle system:
 ```javascript
-var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000}),
+var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000});
 var spawnerOpts = {
       spawnRate: 3000,
       timeScale: 1
@@ -122,7 +120,7 @@ With that in mind, let's use a slightly different particle spawning strategy:
 
 We will keep track of fresh line segments that have not yet been animated in an array, and pop them from the array when they have been animated. Let us call the array `unanimatedLines` and declare it at the top of the `// particle effects` section in `public/whiteboardjs`:
 ```javascript
-// particle effects
+// 3d particle effects
 
 var unanimatedLines = [];
 var tick = 0, clock = new THREE.Clock(true);
@@ -178,7 +176,7 @@ function spawnParticlesAlongLine(number, line) {
 
 That looks correct, but when we try drawing on the whiteboard...
 
-![> VIDEO PLACEHOLDER: multiple browser view, drawing to show no particle effects](images/asdf)
+![> VIDEO PLACEHOLDER: multiple browser view, drawing to show no particle effects](images/v4-00-particleSpawnLocBug.gif)
 
 What's wrong? It turns out the spawn positions of our missing particles were based on the 2D line's position. However, the particles are in a 3D "world", and we have to map the 2D screen position to the 3D world position so they spawn where we want them. Let's use the undeclared function `getWorldPosFromCameraPos` to perform the mapping for us. Change the `var pos = {x: ... y: ...};` in `spawnParticlesAlongLine` as such:
 ```javascript
@@ -211,9 +209,9 @@ function getWorldPosFromCameraPos(x, y) {
 
 Now let's try drawing on the whiteboard again:
 
-![> VIDEO PLACEHOLDER: multiple browser view, drawing, change color, drawing](images/asdf)
+![> VIDEO PLACEHOLDER: multiple browser view, drawing, change color, drawing](images/v4-01-particleSpawnLocBugFixed.gif)
 
-Awesome. We did it! Good job!
+Awesome. We did it! Great job!
 
 ---
 #### Final code
@@ -277,7 +275,7 @@ http.listen(parseInt(process.argv[2]), function(){
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r74/three.min.js"></script>
-  <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/GPUParticleSystem.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/a84b64b1d7efb31ba36a1b10d11a1d1f9f7b7c26/examples/js/GPUParticleSystem.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/whiteboard.js"></script>
 </body>
@@ -431,7 +429,7 @@ colorPickerInput.onchange = function() {
   colorString = colorPickerInput.value;
 };
 
-// particle effects ------------------------------------
+// 3d particle effects ------------------------------------
 
 var tick = 0, clock = new THREE.Clock(true);
 var gfxCanvas = container.querySelector('canvas.gfx-layer');
@@ -453,7 +451,7 @@ camera.position.z = 100;
 renderer.setSize(container.offsetWidth, container.offsetHeight);
 renderer.setClearColor(0x000000, 0);
 
-var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000}),
+var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000});
 var spawnerOpts = {
       spawnRate: 3000,
       timeScale: 1
