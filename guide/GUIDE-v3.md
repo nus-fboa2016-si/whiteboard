@@ -49,7 +49,7 @@ Then we style the color picker by adding these rulesets to `public/index.css`:
 ```
 The key idea here is to style the wrapper element into the desired shape and center it, then make the actual `<input>` element transparent. Let's take a look at the color picker element when we are done:
 
-![> IMAGE PLACEHOLDER: browser view](images/asdf)
+![> VIDEO PLACEHOLDER: browser view; choose color, draw, still same color on board.](images/v3-00-colorPickElem.gif)
 
 Right now the user can choose a new color by clicking on our color picker, but it won't actually do anything. We need to write code to track the current color choice of the user and change it when needed. Let's declare a `colorString` variable to track the current color choice in the format of a CSS color string. Make the following changes to the `// set stroke style` section of  `public/whiteboard.js`:
 ```javascript
@@ -67,7 +67,6 @@ ctx.lineJoin = 'round';
 We will use the `change` event to detect when the user commits their new color choice through the `<input>`. Let's append some code at the bottom of `public/whiteboard.js` to do that:
 ```javascript
 // color picker
-
 var colorPickerWrapper = container.querySelector('.color-picker-wrapper');
 var colorPickerInput = colorPickerWrapper.querySelector('input.color-picker');
 colorPickerInput.onchange = function() {
@@ -79,7 +78,7 @@ colorPickerInput.onchange = function() {
 
 Now we can test that our color changes are reflected in the `colorString` variable:
 
-![> VIDEO PLACEHOLDER: browser view + browser console, change color a few times and watch console output](images/asdf)
+![> VIDEO PLACEHOLDER: browser view + browser console, change color a few times and watch console output](images/v3-01-consolePickColor.gif)
 
 We don't need it any more, so remove the `console.log(colorString)` line in the `onchange` callback.
 
@@ -115,7 +114,7 @@ function drawLine(line) {
 
 Since the data is transparent to our server, we need not change anything in `index.js`. In fact, it should already work- right now. Let's see it in action:
 
-![> VIDEO PLACEHOLDER: multiple browser view, for each browser {choose a new color and draw stuff}](images/asdf)
+![> VIDEO PLACEHOLDER: multiple browser view, for each browser {choose a new color and draw stuff}](images/v3-02-multiUserColor.gif)
 
 That's it! Pretty simple, right?
 
