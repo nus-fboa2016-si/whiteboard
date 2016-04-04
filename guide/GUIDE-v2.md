@@ -63,7 +63,7 @@ node index 3000
 ```
 
 ![> VIDEO PLACEHOLDER: browser and terminal view, connect on two tabs, close one tab, then close the other.
-    Shows that socket.io detects these events through the print statements.](images/asdf)
+    Shows that socket.io detects these events through the print statements.](images/v2-00-detectConnect.gif)
 
 That's all it takes for Socket.IO to maintain the connection between client and server. We can now emit and receive data from both ends, and handle network events like clients connecting, disconnecting, or reconnecting.
 
@@ -174,13 +174,11 @@ Here is what our user count element looks like now:
 node index 3000
 ```
 
-![> IMAGE PLACEHOLDER: browser view](images/asdf)
+![> IMAGE PLACEHOLDER: browser view](images/v2-01-userCountElem.png)
 
 Now let's decide how to update the user count. First we have to track the canonical user count on the server, and every time a client connects or disconnects, the canonical count is updated. Change `index.js` as such:
 ```javascript
-var express = require('express');
-var app = express();
-var http = require('http').Server(app);
+...
 var io = require('socket.io')(http);
 
 var userCount = 0;
@@ -195,10 +193,7 @@ io.on('connection', function(socket){
 });
 
 app.use(express.static('public'));
-
-http.listen(parseInt(process.argv[2]), function(){
-  console.log('listening on port ' + process.argv[2]);
-});
+...
 ```
 
 Here it is in action:
@@ -207,7 +202,7 @@ node index 3000
 ```
 
 ![> VIDEO PLACEHOLDER: browser and terminal view, connect on two tabs, close one tab, then close the other.
-    Shows that socket.io tracks connect count through the print statements.](images/asdf)
+    Shows that socket.io tracks connect count through the print statements.](images/v2-02-serverCountConnect.gif)
 
 Next, we have to send the updated user count to all clients every time someone (dis)connects. We will emit the user count as an `'user count'` event. Update the `io.on(...)` statement in `index.js`:
 ```javascript
@@ -240,18 +235,18 @@ node index 3000
 ```
 
 ![> VIDEO PLACEHOLDER: browser and terminal view, connect on two tabs, close one tab, then close the other.
-    Shows that browser page displays user count accurately](images/asdf)
+    Shows that browser page displays user count accurately](images/v2-03-clientCountConnect.gif)
 
 ---
 #### Drawing across overlapping elements
 
 Take some time to play with the whiteboard again. You will notice a problem when drawing into the user count text region:
 
-![> VIDEO PLACEHOLDER: browser view, draw on the user count text, draw into the user count text and back out again](images/asdf)
+![> VIDEO PLACEHOLDER: browser view, draw on the user count text, draw into the user count text and back out again](images/v2-04-drawOverCountBug.gif)
 
 This is caused by:
-- Our mouse event handlers use `e.offsetX` and `e.offsetY`.
-- The text count `svg` is 'on top of' the container `div`, so the `MouseEvent` target points to it instead of the container.
+- Our mouse event handlers using `e.offsetX` and `e.offsetY`.
+- The text count `svg` being 'on top of' the container `div`, so the `MouseEvent` target points to it instead of the container.
 
 Let's solve this problem once and for all. We will implement a function to get the mouse coordinates relative to our `container` element **regardless** of the `MouseEvent`'s target. Append this function in `whiteboard.js` below our mouse event handlers but above the user count code:
 ```javascript
@@ -286,7 +281,7 @@ container.onmousemove = function(e){
 
 The mouse position is correctly mapped now:
 
-![> VIDEO PLACEHOLDER: browser view, draw on the user count text, draw into the user count text and back out again](images/asdf)
+![> VIDEO PLACEHOLDER: browser view, draw on the user count text, draw into the user count text and back out again](images/v2-05-drawOverCountBugFixed.gif)
 
 ---
 #### Displaying and synchronizing strokes from multiple users
@@ -353,7 +348,7 @@ With this, we are done! Check it out:
 node index 3000
 ```
 
-![> VIDEO PLACEHOLDER: multiple browser view, draw on either board and see it reflected on other boards.](images/asdf)
+![> VIDEO PLACEHOLDER: multiple browser view, draw on either board and see it reflected on other boards.](images/v2-06-multiUserDrawing.gif)
 
 ---
 #### Final code
