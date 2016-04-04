@@ -48,9 +48,8 @@ Then we style the color picker by adding these rulesets to `public/index.css`:
 }
 ```
 The key idea here is to style the wrapper element into the desired shape and center it, then make the actual `<input>` element transparent. Let's take a look at the color picker element when we are done:
-```
-> IMAGE PLACEHOLDER: browser view
-```
+
+![> IMAGE PLACEHOLDER: browser view](images/asdf)
 
 Right now the user can choose a new color by clicking on our color picker, but it won't actually do anything. We need to write code to track the current color choice of the user and change it when needed. Let's declare a `colorString` variable to track the current color choice in the format of a CSS color string. Make the following changes to the `// set stroke style` section of  `public/whiteboard.js`:
 ```javascript
@@ -79,9 +78,9 @@ colorPickerInput.onchange = function() {
 ```
 
 Now we can test that our color changes are reflected in the `colorString` variable:
-```
-> VIDEO PLACEHOLDER: browser view + browser console, change color a few times and watch console output
-```
+
+![> VIDEO PLACEHOLDER: browser view + browser console, change color a few times and watch console output](images/asdf)
+
 We don't need it any more, so remove the `console.log(colorString)` line in the `onchange` callback.
 
 ---
@@ -115,9 +114,8 @@ function drawLine(line) {
 ```
 
 Since the data is transparent to our server, we need not change anything in `index.js`. In fact, it should already work- right now. Let's see it in action:
-```
-> VIDEO PLACEHOLDER: multiple browser view, for each browser {choose a new color and draw stuff}
-```
+
+![> VIDEO PLACEHOLDER: multiple browser view, for each browser {choose a new color and draw stuff}](images/asdf)
 
 That's it! Pretty simple, right?
 

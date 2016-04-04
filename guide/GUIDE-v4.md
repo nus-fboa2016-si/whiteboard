@@ -9,9 +9,9 @@ This is the last in a series of four tutorials that walk you through the creatio
 In our [previous](GUIDE-v3.md) installment of the guide, we augmented the user's "brush" with color. Some of you might have added even more features, like pen size, gradients, etc. 
 
 We are now at the final tutorial of this guide, so let us end on a special note. Up till now we have only been working with 2D graphics. If you've played with the [demo](paradite.com:3000) then you've noticed the most glaring difference between it and our own whiteboard: fancy 3D particle effects. 
-```
-> VIDEO PLACEHOLDER: browser view, demo version, draw randomly
-```
+
+![> VIDEO PLACEHOLDER: browser view, demo version, draw randomly](images/asdf)
+
 Let's do the same here.
 
 ---
@@ -177,9 +177,8 @@ function spawnParticlesAlongLine(number, line) {
 ```
 
 That looks correct, but when we try drawing on the whiteboard...
-```
-> VIDEO PLACEHOLDER: multiple browser view, drawing to show no particle effects
-```
+
+![> VIDEO PLACEHOLDER: multiple browser view, drawing to show no particle effects](images/asdf)
 
 What's wrong? It turns out the spawn positions of our missing particles were based on the 2D line's position. However, the particles are in a 3D "world", and we have to map the 2D screen position to the 3D world position so they spawn where we want them. Let's use the undeclared function `getWorldPosFromCameraPos` to perform the mapping for us. Change the `var pos = {x: ... y: ...};` in `spawnParticlesAlongLine` as such:
 ```javascript
@@ -211,9 +210,8 @@ function getWorldPosFromCameraPos(x, y) {
 ```
 
 Now let's try drawing on the whiteboard again:
-```
-> VIDEO PLACEHOLDER: multiple browser view, drawing, change color, drawing
-```
+
+![> VIDEO PLACEHOLDER: multiple browser view, drawing, change color, drawing](images/asdf)
 
 Awesome. We did it! Good job!
 
