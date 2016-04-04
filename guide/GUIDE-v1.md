@@ -56,10 +56,9 @@ This means that when we run `node index 3000`, the server listens on port 3000 (
 ```
 
 Now if we run `node index 3000` and point our browser to `localhost:3000`, we should see:
-![](images/v1-00-helloWorld.png)
-```
-> IMAGE PLACEHOLDER: browser and terminal
-```
+
+![> IMAGE PLACEHOLDER: browser and terminal](images/v1-00-helloWorld.png)
+
 
 ---
 #### Setup the whiteboard
@@ -192,18 +191,16 @@ container.onmouseup = function(e){
 ```
 
 Now we have a simple but functional whiteboard:
-![](images/v1-01-drawOnBoard.gif)
-```
-> VIDEO PLACEHOLDER: browser view, drawing shapes in whiteboard
-```
+
+![> VIDEO PLACEHOLDER: browser view, drawing shapes in whiteboard](images/v1-01-drawOnBoard.gif)
+
 
 If we play around with the whiteboard, we might notice something odd:
-![](images/v1-02-borderBug.gif)
-```
-> VIDEO PLACEHOLDER: browser view, start cursor in borders, hold mouse button, 
+
+![> VIDEO PLACEHOLDER: browser view, start cursor in borders, hold mouse button, 
     move cursor out of bottom border and back in through top border, release mouse button. 
-    Hold mouse button, leave through left border, reenter through right border.
-```
+    Hold mouse button, leave through left border, reenter through right border.](images/v1-02-borderBug.gif)
+
 This behaviour is caused by:
 
 1. The `container.onmouseup` callback not firing when releasing the mouse button outside the whiteboard, so `isDrawing` is stuck on `true`
@@ -225,11 +222,10 @@ container.onmouseenter = function(e) {
 ```
 
 Let's see if it's fixed:
-![](v1-03-borderBugFixed.gif)
-```
-> VIDEO PLACEHOLDER: browser view, start cursor in borders, 
-    hold mouse button, draw randomly weaving in and out the borders
-```
+
+![> VIDEO PLACEHOLDER: browser view, start cursor in borders, 
+    hold mouse button, draw randomly weaving in and out the borders](images/v1-03-borderBugFixed.gif)
+
 Great! Now we have a simple and responsive whiteboard.
 
 ---
