@@ -1,12 +1,12 @@
 # Augmenting user strokes: color
- <p align="center">[(Simultaneous drawing with multiple users) &lt; previous](../v2/GUIDE.md)  |   [next &gt; (Adding graphical effects: 3D particles)](../v4/GUIDE.md)</p>
+ <p align="center">[(Simultaneous drawing with multiple users) &lt; previous](GUIDE-v2.md)  |   [next &gt; (Adding graphical effects: 3D particles)](GUIDE-v4.md)</p>
  
 ---
 #### Different strokes for different folks.
 
 This is the third in a series of four tutorials that walk you through the creation of a real-time collaborative whiteboard with Socket.IO. A fully featured demo can be found [here](paradite.com:3000).
 
-In our [previous](../v2/GUIDE.md) installment of the guide, we completed our collaborative whiteboard. It may be complete, but it is a pretty bare-bones application. You've been waiting for this collaborative whiteboard guide for a long time, so we'll go the extra mile with you: for our last two tutorials of the guide, we will add more features and aim to bring our version of the whiteboard as close as possible to feature parity with the [demo version](paradite.com:3000), together.
+In our [previous](GUIDE-v2.md) installment of the guide, we completed our collaborative whiteboard. It may be complete, but it is a pretty bare-bones application. You've been waiting for this collaborative whiteboard guide for a long time, so we'll go the extra mile with you: for our last two tutorials of the guide, we will add more features and aim to bring our version of the whiteboard as close as possible to feature parity with the [demo version](paradite.com:3000), together.
 
 In this tutorial we will let users color their strokes. There are many other ways we can augment the strokes (a list of suggestions can be found at the bottom of this tutorial), but we will focus only on color here; the basic concepts of capturing different input and serializing, sending, receiving, and deserializing additional data apply across any other enhancements you may wish to make.
 
@@ -356,4 +356,4 @@ cd whiteboard/guide/v3
 ```
 
 ---
- <p align="center">[(Simultaneous drawing with multiple users) &lt; previous](../v2/GUIDE.md)  |   [next &gt; (Adding graphical effects: 3D particles)](../v4/GUIDE.md)</p>
+ <p align="center">[(Simultaneous drawing with multiple users) &lt; previous](GUIDE-v2.md)  |   [next &gt; (Adding graphical effects: 3D particles)](GUIDE-v4.md)</p>

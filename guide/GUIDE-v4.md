@@ -1,12 +1,12 @@
 # Adding graphical effects: 3D particles
- <p align="center">[(Augmenting user strokes: color) &lt; previous](../v3/GUIDE.md)  |</p>
+ <p align="center">[(Augmenting user strokes: color) &lt; previous](GUIDE-v3.md)  |</p>
  
 ---
 #### Introduction
 
 This is the last in a series of four tutorials that walk you through the creation of a real-time collaborative whiteboard with Socket.IO. A fully featured demo can be found [here](paradite.com:3000).
 
-In our [previous](../v3/GUIDE.md) installment of the guide, we augmented the user's "brush" with color. Some of you might have added even more features, like pen size, gradients, etc. 
+In our [previous](GUIDE-v3.md) installment of the guide, we augmented the user's "brush" with color. Some of you might have added even more features, like pen size, gradients, etc. 
 
 We are now at the final tutorial of this guide, so let us end on a special note. Up till now we have only been working with 2D graphics. If you've played with the [demo](paradite.com:3000) then you've noticed the most glaring difference between it and our own whiteboard: fancy 3D particle effects. 
 ```
@@ -549,4 +549,4 @@ cd whiteboard/guide/v4
 ```
 
 ---
- <p align="center">[(Augmenting user strokes: color) &lt; previous](../v3/GUIDE.md)  |</p>
+ <p align="center">[(Augmenting user strokes: color) &lt; previous](GUIDE-v3.md)  |</p>

@@ -1,5 +1,5 @@
 # Creating a simple whiteboard
- <p align="center">|   [next &gt; (Simultaneous drawing with multiple users)](../v2/GUIDE.md)</p>
+ <p align="center">|   [next &gt; (Simultaneous drawing with multiple users)](GUIDE-v2.md)</p>
 
 ---
 #### Introduction
@@ -348,4 +348,4 @@ cd whiteboard/guide/v1
 ```
 
 ---
- <p align="center">|   [next &gt; (Simultaneous drawing with multiple users)](../v2/GUIDE.md)</p>
+ <p align="center">|   [next &gt; (Simultaneous drawing with multiple users)](GUIDE-v2.md)</p>

@@ -1,12 +1,12 @@
 # Simultaneous drawing with multiple users
- <p align="center">[(Creating a simple whiteboard) &lt; previous](../v1/GUIDE.md)  |   [next &gt; (Augmenting user strokes: color)](../v3/GUIDE.md)</p>
+ <p align="center">[(Creating a simple whiteboard) &lt; previous](GUIDE-v1.md)  |   [next &gt; (Augmenting user strokes: color)](GUIDE-v3.md)</p>
  
 ---
 #### Collaborate in real-time.
 
 This is the second in a series of four tutorials that walk you through the creation of a real-time collaborative whiteboard with Socket.IO. A fully featured demo can be found [here](paradite.com:3000).
 
-In our [previous](../v1/GUIDE.md) installment of the guide, we created a functional whiteboard and served it to client browsers. In this tutorial we will add the ability for multiple users to draw on the board simultaneously. To do this we will use Socket.IO to push new strokes to all other connected clients.
+In our [previous](GUIDE-v1.md) installment of the guide, we created a functional whiteboard and served it to client browsers. In this tutorial we will add the ability for multiple users to draw on the board simultaneously. To do this we will use Socket.IO to push new strokes to all other connected clients.
 
 ---
 #### Integrating Socket.IO
@@ -559,4 +559,4 @@ cd whiteboard/guide/v2
 ```
 
 ---
- <p align="center">[(Creating a simple whiteboard) &lt; previous](../v1/GUIDE.md)  |   [next &gt; (Augmenting user strokes: color)](../v3/GUIDE.md)</p>
+ <p align="center">[(Creating a simple whiteboard) &lt; previous](GUIDE-v1.md)  |   [next &gt; (Augmenting user strokes: color)](GUIDE-v3.md)</p>
