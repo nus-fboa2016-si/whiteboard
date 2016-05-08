@@ -4,7 +4,7 @@
 ---
 #### Introduction
 
-This is the first in a series of four tutorials that walk you through the creation of a real-time collaborative whiteboard with Socket.IO. A fully featured demo can be found [here](paradite.com:3000).
+This is the first in a series of four tutorials that walk you through the creation of a real-time collaborative whiteboard with Socket.IO. A fully featured demo can be found [here](sio-whiteboard.herokuapp.com).
 
 The HTML5 `canvas` API allows web developers to draw graphics via scripting. By itself it already provides several useful methods for drawing simple shapes and lines. This makes it ideal for implementing our interactive whiteboard. In this tutorial, we will learn to create a simple local interactive whiteboard on a webpage, and serve it from a `node.js` server.
 

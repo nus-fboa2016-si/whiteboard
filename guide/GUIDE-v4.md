@@ -4,11 +4,11 @@
 ---
 #### Introduction
 
-This is the last in a series of four tutorials that walk you through the creation of a real-time collaborative whiteboard with Socket.IO. A fully featured demo can be found [here](paradite.com:3000).
+This is the last in a series of four tutorials that walk you through the creation of a real-time collaborative whiteboard with Socket.IO. A fully featured demo can be found [here](sio-whiteboard.herokuapp.com).
 
 In our [previous](GUIDE-v3.md) installment of the guide, we augmented the user's "brush" with color. Some of you might have added even more features, like pen size, gradients, etc. 
 
-We are now at the final tutorial of this guide, so let us end on a special note. Up till now we have only been working with 2D graphics. If you've played with the [demo](paradite.com:3000) then you've noticed the most glaring difference between it and our own whiteboard: fancy 3D particle effects. 
+We are now at the final tutorial of this guide, so let us end on a special note. Up till now we have only been working with 2D graphics. If you've played with the [demo](sio-whiteboard.herokuapp.com) then you've noticed the most glaring difference between it and our own whiteboard: fancy 3D particle effects. 
 
 Let's do the same here.
 
@@ -109,7 +109,7 @@ Take note of `particleSystem` and `particleOpts`. If you experience perfomance i
 ---
 #### Adding particle effects when drawing
 
-There are many strategies we can use for spawning the particles. The most obvious way is to spawn them at the user's current mouse position, but if we do that the particles don't follow the mouse trail nicely. You can try it out yourself and compare the animation with the [demo](paradite.com:3000).
+There are many strategies we can use for spawning the particles. The most obvious way is to spawn them at the user's current mouse position, but if we do that the particles don't follow the mouse trail nicely. You can try it out yourself and compare the animation with the [demo](sio-whiteboard.herokuapp.com).
 
 With that in mind, let's use a slightly different particle spawning strategy:
 
