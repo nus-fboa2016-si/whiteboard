@@ -9,6 +9,10 @@ var BUFFER_MAX = 500;
 
 var drawingBuffer = [];
 
+// set the port of our application
+// process.env.PORT lets the port be set by Heroku
+var port = process.env.PORT || 3000;
+
 function addToBuffer(line) {
   drawingBuffer.push(line);
   if (drawingBuffer.length > BUFFER_MAX) {
@@ -19,7 +23,6 @@ function addToBuffer(line) {
 app.use(express.static('public'));
 
 io.on('connection', function(socket) {
-
   numConnected++;
   console.log('connected: ' + numConnected);
   io.emit('user count', numConnected);
@@ -38,6 +41,6 @@ io.on('connection', function(socket) {
   });
 });
 
-http.listen(3000, function() {
-  console.log('listening on *:3000');
+http.listen(port, function() {
+  console.log('listening on *:' + port);
 });
