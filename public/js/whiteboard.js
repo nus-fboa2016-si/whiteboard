@@ -318,7 +318,7 @@ var createWhiteboard = function(parentElement) {
     socket.on('buffered lines', function(lines) {
       lines.forEach(drawLine);
     });
-    socket.on('draw line', function(line){
+    socket.on('draw line', function(line) {
       drawLine(line);
       unanimatedLines.push(line);
     });
