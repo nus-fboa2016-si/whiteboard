@@ -25,27 +25,9 @@ body {
   bottom: 10px;
   cursor: default;
 }
-#whiteboard-container text.user-count {
+#whiteboard-container > svg > text.user-count {
   fill: #00D5B0;
   font-size: 12px;
   font-family: sans-serif;
   text-anchor: start;
-}
-#whiteboard-container .color-picker-wrapper {
-  border-radius: 100%;
-  margin-top: 20px;
-  margin-left: auto;
-  margin-right: auto;
-  height: 32px;
-  width: 32px;
-  border: 1.5px solid #101010;
-}
-#whiteboard-container .color-picker {
-  opacity: 0;
-  width: inherit;
-  height: inherit;
-  padding: 0;
-}
-.color-picker:hover {
-  cursor: pointer;
 }

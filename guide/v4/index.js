@@ -5,14 +5,10 @@ var io = require('socket.io')(http);
 
 var userCount = 0;
 
-app.use(express.static('public'));
-
 io.on('connection', function(socket){
-
-  // update connection count
   userCount++;
   console.log('Users connected: ' + userCount);
-  io.emit('user count', userCount); //update all clients
+  io.emit('user count', userCount);
 
   socket.on('disconnect', function(){
     userCount--;
@@ -24,6 +20,8 @@ io.on('connection', function(socket){
     socket.broadcast.emit('draw line', line);
   });
 });
+
+app.use(express.static('public'));
 
 http.listen(parseInt(process.argv[2]), function(){
   console.log('listening on port ' + process.argv[2]);

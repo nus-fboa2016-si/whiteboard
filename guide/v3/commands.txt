@@ -1,4 +1,0 @@
-more:
-allow custom line width
-allow users to choose names
-show which user is drawing

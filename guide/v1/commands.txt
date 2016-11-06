@@ -1,6 +1,0 @@
-npm install --save express
-
-node index.js
-
-more:
-add screen clearing capability

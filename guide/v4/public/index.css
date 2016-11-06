@@ -3,9 +3,6 @@ body {
   margin: 0px;
   overflow: hidden;
 }
-#whiteboard-container canvas {
-  position: absolute;
-}
 #whiteboard-container {
   height: 600px;
   width: 900px;
@@ -16,6 +13,9 @@ body {
   left: 0px;
   right: 0px;
   margin: auto;
+}
+#whiteboard-container canvas {
+  position: absolute;
 }
 #whiteboard-container > svg.user-count {
   height: 30px;
@@ -31,7 +31,7 @@ body {
   font-family: sans-serif;
   text-anchor: start;
 }
-.color-picker-wrapper {
+#whiteboard-container .color-picker-wrapper {
   border-radius: 100%;
   margin-top: 20px;
   margin-left: auto;
@@ -40,7 +40,7 @@ body {
   width: 32px;
   border: 1.5px solid #101010;
 }
-.color-picker {
+#whiteboard-container .color-picker {
   opacity: 0;
   width: inherit;
   height: inherit;

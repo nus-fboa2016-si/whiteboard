@@ -8,17 +8,18 @@ var wb = container.querySelector('canvas.whiteboard');
 wb.height = container.clientHeight;
 wb.width = container.clientWidth;
 
-var isDrawing = false;
-var prevX, prevY, mouseIsInside = true;
-var colorString = '#aa88ff';
-
 // set stroke style
+var colorString = '#aa88ff';
 var ctx = wb.getContext('2d');
+ctx.strokeStyle = colorString;
 ctx.lineWidth = 2;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
-// event handlers --------------------------------------
+// draw logic ------------------------------------------
+
+var prevX, prevY,
+    isDrawing = false;
 
 container.onmousedown = function(e){
   e.preventDefault();
@@ -30,10 +31,6 @@ container.onmousedown = function(e){
 
 container.onmousemove = function(e){
   if (!isDrawing) return;
-  if (!mouseIsInside) {
-    mouseIsInside = true;
-    container.onmousedown(e);
-  }
   var pos = getMouseEventContainerPos(e);
   var newLine = {
     startX: prevX,
@@ -48,12 +45,13 @@ container.onmousemove = function(e){
   prevY = pos.y;
 };
 
-document.onmouseup = function(e){
+document.onmouseup = function(){
   isDrawing = false;
 };
 
 container.onmouseleave = function(e) {
-  mouseIsInside = false;
+  if (!isDrawing) return;
+  container.onmousedown(e);
 };
 
 function getMouseEventContainerPos(e) {
@@ -92,7 +90,6 @@ colorPickerInput.onchange = function() {
 
 // particle effects ------------------------------------
 
-var unanimatedLines = [];
 var tick = 0, clock = new THREE.Clock(true);
 var gfxCanvas = container.querySelector('canvas.gfx-layer');
 
@@ -109,25 +106,26 @@ var camera = new THREE.PerspectiveCamera(
     }),
     scene = new THREE.Scene();
 
-var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000}),
-    spawnerOpts = {
-  spawnRate: 3000,
-  timeScale: 1
-},
-    particleOpts = {
-  positionRandomness: 0.5,
-  velocity: new THREE.Vector3(),
-  velocityRandomness: 0.5,
-  colorRandomness: 0.2,
-  turbulence: 0.4,
-  lifetime: 0.8,
-  size: 16,
-  sizeRandomness: 1
-};
-
 camera.position.z = 100;
 renderer.setSize(container.offsetWidth, container.offsetHeight);
 renderer.setClearColor(0x000000, 0);
+
+var particleSystem = new THREE.GPUParticleSystem({maxParticles: 250000});
+var spawnerOpts = {
+      spawnRate: 3000,
+      timeScale: 1
+};
+var particleOpts = {
+      positionRandomness: 0.5,
+      velocity: new THREE.Vector3(),
+      velocityRandomness: 0.5,
+      colorRandomness: 0.2,
+      turbulence: 0.4,
+      lifetime: 0.8,
+      size: 16,
+      sizeRandomness: 1
+};
+
 scene.add(particleSystem);
 
 animate();
@@ -148,14 +146,14 @@ function animate() {
 }
 
 function spawnParticlesAlongLine(number, line) {
-  for (var i = 0; i < number; i++) {
+  for (var i = 0; i < number; i++) { // ensure uniform distribution
     var percent = i / number;
-    var pos = getWorldPosFromCameraPos(
+    var pos = getWorldPosFromCameraPos( // position particle on correct part of line
         line.startX * (1 - percent) + line.endX * percent,
         line.startY * (1 - percent) + line.endY * percent
     );
-    particleOpts.color = parseInt(line.colorString.substr(1), 16);
-    particleOpts.position = new THREE.Vector3(pos.x, pos.y, 0);
+    particleOpts.color = parseInt(line.colorString.substr(1), 16); // convert our colorString into RGB hex for the particle system
+    particleOpts.position = new THREE.Vector3(pos.x, pos.y, 0); // start position of this particle
     particleSystem.spawnParticle(particleOpts);
   }
 }

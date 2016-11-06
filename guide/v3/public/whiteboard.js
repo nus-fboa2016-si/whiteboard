@@ -8,17 +8,18 @@ var wb = container.querySelector('canvas.whiteboard');
 wb.height = container.clientHeight;
 wb.width = container.clientWidth;
 
-var isDrawing = false;
-var prevX, prevY, mouseIsInside = true;
-var colorString = '#aa88ff';
-
 // set stroke style
+var colorString = '#aa88ff';
 var ctx = wb.getContext('2d');
+ctx.strokeStyle = colorString;
 ctx.lineWidth = 2;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
-// event handlers --------------------------------------
+// draw logic ------------------------------------------
+
+var prevX, prevY,
+    isDrawing = false;
 
 container.onmousedown = function(e){
   e.preventDefault();
@@ -30,10 +31,6 @@ container.onmousedown = function(e){
 
 container.onmousemove = function(e){
   if (!isDrawing) return;
-  if (!mouseIsInside) {
-    mouseIsInside = true;
-    container.onmousedown(e);
-  }
   var pos = getMouseEventContainerPos(e);
   var newLine = {
     startX: prevX,
@@ -48,12 +45,13 @@ container.onmousemove = function(e){
   prevY = pos.y;
 };
 
-document.onmouseup = function(e){
+document.onmouseup = function(){
   isDrawing = false;
 };
 
-container.onmouseleave = function(e) {
-  mouseIsInside = false;
+container.onmouseenter = function(e) {
+  if (!isDrawing) return;
+  container.onmousedown(e);
 };
 
 function getMouseEventContainerPos(e) {
